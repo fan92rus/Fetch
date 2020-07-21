@@ -7,6 +7,11 @@
 
     using AngleSharp.Dom;
 
+    enum SelectorType
+    {
+        Universal,
+        Concrete
+    }
     static class INodeEx
     {
         public static bool IsText(this IElement element)
@@ -135,84 +140,130 @@
 
         public static string GetSelector(this IElement element)
         {
-            return GetSelector(element, null);
+            return GetSelector(element, null, SelectorType.Universal, null);
         }
+
+        public static string GetSelector(this IElement element, SelectorType type)
+        {
+            return GetSelector(element, null, type, null);
+        }
+
         public static string GetSelector(this IElement element, string maxSelector)
+        {
+            return GetSelector(element, maxSelector, SelectorType.Universal, null);
+        }
+
+        public static string GetSelector(this IElement element, SelectorType type, IElement maxElement)
+        {
+            return GetSelector(element, "html", type, maxElement);
+        }
+
+        public static string GetSelector(this IElement element, string maxSelector, SelectorType type, IElement checkElement)
         {
             if (element == null)
                 return null;
 
             var selector = "";
 
+
+            var classSelector = GetClassSelector(element);
+            var idSelector = GetIdSelector(element);
+
             if (element.TagName != null && !element.TagName.Contains(":"))
                 selector = element.TagName.ToLower();
-            if (!string.IsNullOrEmpty(selector) && maxSelector != null && !selector.Contains(maxSelector) && element.ParentElement != null)
+
+
+            if (!string.IsNullOrEmpty(element.ClassName) && !string.IsNullOrEmpty(classSelector))
+                if (type != SelectorType.Concrete || (checkElement != null && (checkElement.QuerySelectorAll(classSelector).Length == 1)))
+                    return classSelector;
+
+            if (!string.IsNullOrEmpty(selector) && maxSelector != null && !selector.Contains(maxSelector) && element.ParentElement != null && idSelector == null)
             {
-                var c = element.ParentElement.QuerySelectorAll(selector).Length;
-                if (c > 1 && c < 5)
+                var c = element.ParentElement.QuerySelectorAll(classSelector).Length;
+
+                if (c > 1 && c < 4 || type == SelectorType.Concrete)
                 {
                     var parent = element.ParentElement;
 
                     var index = parent.Children.Where(_ => _.GetType() == element.GetType()).Index(element);
 
-                    return $":nth-child({index + 1})";
+                    return index == 0 ? selector : $":nth-child({index + 1})";
                 }
             }
-            if (!String.IsNullOrEmpty(element.ClassName))
-            {
-                var parent = element.ParentElement ?? element;
-                var classes = element.ClassList.Select(x => Regex.Replace(x.Trim(), ":.+", ""));
 
-                var enumerator = classes.GetEnumerator();
-
-
-                bool next;
-                var count = 0;
-
-                if (element.Children.Any())
-                {
-                    var childrenLength = element.Children.Length;
-
-                    do
-                    {
-                        next = enumerator.MoveNext();
-                        if (enumerator.Current != null)
-                            selector += "." + enumerator.Current;
-                        count = parent.QuerySelectorAll(selector).Length;
-
-                        var compare = parent.QuerySelectorAll(selector).All(x => x.Children.Length == childrenLength);
-
-                        if (compare || (count > 1 && next))
-                            break;
-                    }
-                    while (true);
-
-                    return selector;
-                }
-                else
-                {
-                    do
-                    {
-                        next = enumerator.MoveNext();
-                        if (enumerator.Current != null)
-                            selector += "." + enumerator.Current;
-                        count = parent.QuerySelectorAll(selector).Length;
-                    }
-                    while (count > 1 && next);
-                }
-            }
-            else if (element.ParentElement != null && !element.ParentElement.GetSelector().Contains("#") && !string.IsNullOrWhiteSpace(selector))
+            if (element.ParentElement != null && !element.ParentElement.GetSelector().Contains("#") && !string.IsNullOrWhiteSpace(selector))
             {
                 var parentSelector = element.ParentElement.GetSelector(maxSelector);
+
                 if (maxSelector != null && !parentSelector.Contains(maxSelector))
                     return $"{parentSelector} > {selector}";
             }
-            else if (!string.IsNullOrEmpty(element.Id))
-                selector += $"#{element.Id}";
-            else if (element.Attributes.Any())
+
+
+            var attr = element.Attributes.FirstOrDefault(x => !string.IsNullOrEmpty(x?.Name) && x.Name != "id");
+
+            if (attr != null && !attr.Name.Contains("\""))
+                return $"{selector}[{attr.Name}]";
+
+            if (!string.IsNullOrEmpty(idSelector))
+                return selector + idSelector;
+
+            return selector;
+        }
+
+        public static string GetIdSelector(IElement element)
+        {
+            if (!string.IsNullOrEmpty(element.Id) && !Regex.IsMatch(element.Id, "\\d+"))
+                return $"#{element.Id}";
+            return null;
+        }
+        private static string GetClassSelector(IElement element)
+        {
+            var parent = element.ParentElement ?? element;
+            var classes = element.ClassList.Select(x => Regex.Replace(x.Trim(), ":.+", ""));
+
+            string selector = Regex.Replace(element.LocalName, ":.+", "");
+
+            var enumerator = classes.GetEnumerator();
+
+            bool next;
+            var count = 0;
+
+            if (element.Children.Any())
             {
-                var firstElement = element.Attributes.First();
-                selector += $"[{firstElement.Name}]";
+                var childrenLength = element.Children.Length;
+
+                do
+                {
+                    next = enumerator.MoveNext();
+
+                    if (enumerator.Current != null && Regex.IsMatch(enumerator.Current, "\\d+"))
+                        continue;
+
+                    if (enumerator.Current != null)
+                        selector += "." + enumerator.Current;
+
+                    count = parent.QuerySelectorAll(selector).Length;
+
+                    var compare = parent.QuerySelectorAll(selector).All(x => x.Children.Length == childrenLength);
+
+                    if (compare || (count > 1 && !next))
+                        break;
+                }
+                while (true);
+
+                return selector;
+            }
+            else
+            {
+                do
+                {
+                    next = enumerator.MoveNext();
+                    if (enumerator.Current != null && !enumerator.Current.Contains("%"))
+                        selector += "." + enumerator.Current;
+                    count = parent.QuerySelectorAll(selector).Length;
+                }
+                while (count > 1 && next);
             }
 
             return selector;

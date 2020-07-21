@@ -2,6 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
+
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
     using MoreLinq;
@@ -9,6 +11,7 @@
 
     enum Type
     {
+        Default,
         Link,
         Text,
         Image,
@@ -62,14 +65,17 @@
             else
             {
                 var element = infoNode.Element;
+                var urlExpr =
+                    "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
-                if (element is IHtmlAnchorElement)
-                {
-                    infoNode.Type = Type.Link;
-                }
-                else if (element is IHtmlImageElement)
+
+                if (element is IHtmlImageElement)
                 {
                     infoNode.Type = Type.Image;
+                }
+                else if (element is IHtmlAnchorElement || element.Attributes.Any(a => Regex.IsMatch(a.Value, urlExpr)))
+                {
+                    infoNode.Type = Type.Link;
                 }
                 else if (element is IHtmlButtonElement)
                 {
@@ -94,7 +100,7 @@
             };
 
 
-            if (element.LocalName == "tr")
+            if (node.Selector.Contains("data-table"))
             {
 
             }
@@ -112,9 +118,13 @@
                 if (parsed == null)
                     continue;
 
-                foreach (var n in parsed.Nodes.ToList())
+                var enumerator = parsed.Nodes.GetEnumerator();
+
+                while (enumerator.MoveNext())
                 {
-                    var count = element.QuerySelectorAll(n.Selector).Length;
+                    var n = enumerator.Current;
+
+                    var count = element.QuerySelectorAll(n?.Selector).Length;
 
                     if (count == 1 || parsed.Nodes.Count == 1)
                     {
@@ -122,16 +132,37 @@
                         n.Selector = n.Element.GetSelector(containerSelector);
                         parsed.Nodes.Remove(n);
                         node.Nodes.Add(n);
+                        enumerator = parsed.Nodes.GetEnumerator();
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
 
-                var isOk = parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class");
+                var isOk = parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link;
 
                 if (isOk && node.Nodes.All(x => x.Selector != parsed.Selector) || parsed.Nodes.Any())
                     node.Nodes.Add(parsed);
             }
 
-            node.Nodes = node.Nodes.DistinctBy(x => x.Selector + x.Nodes).ToList();
+            var nodes = node.Nodes.DistinctBy(x => x.Selector + "_" + string.Join("_", x.Nodes.Select(e => e.Selector)))/*.ToList();//*/.GroupBy(x => x.Selector);
+            node.Nodes = new List<InfoNode>();
+
+            foreach (var group in nodes)
+            {
+                var el = group.First();
+
+                foreach (var ge in group.SelectMany(g => g.Nodes))
+                {
+                    if (el.Nodes.All(x => x.Selector != ge.Selector))
+                    {
+                        el.Nodes.Add(ge);
+                    }
+                }
+
+                node.Nodes.Add(el);
+            }
 
             return node;
         }
