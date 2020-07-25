@@ -200,7 +200,7 @@
             }
 
 
-            var attr = element.Attributes.FirstOrDefault(x => !string.IsNullOrEmpty(x?.Name) && x.Name != "id");
+            var attr = element.Attributes.FirstOrDefault(x => !string.IsNullOrEmpty(x?.Name) && x.Name != "id" && !x.Name.Contains(":"));
 
             if (attr != null && !attr.Name.Contains("\""))
                 return $"{selector}[{attr.Name}]";

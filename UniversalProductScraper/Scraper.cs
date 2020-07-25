@@ -58,7 +58,6 @@
                 Attributes =
                                 element.Attributes.Where(x => x.Name != "class")
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
-                //Classes = element.ClassList.Select(x => x.ToString()).ToList(),
                 Type = child.Type,
                 ParentNode = parent
             };
@@ -82,92 +81,6 @@
             }
 
             return n;
-        }
-
-        private List<Node> ScrapListNoder(InfoNode info)
-        {
-            try
-            {
-                if (info.Selector.Contains("tbody"))
-                {
-
-                }
-
-                var infoSelector = info.Element.GetSelector();
-
-                Console.WriteLine("ScrapNode - " + info.Selector);
-                var nodes = new List<Node>();
-
-                var parent = info.Element.ParentElement;
-
-
-                var elements = new List<IElement>();
-
-                if (info.Element.LocalName == "html")
-                    elements.Add(info.Element);
-                else if (parent != null)
-                    elements = parent.QuerySelectorAll(info.Selector).ToList();
-
-                if (!elements.Any())
-                {
-
-                }
-                foreach (var element in elements)
-                {
-                    var testSelector = element.GetSelector();
-                    var finalNode = new Node
-                    {
-                        Selector = info.Selector,
-                        Attributes = element.Attributes.Where(x => x.Name != "class").Select(
-                                                x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
-                        //Classes = element.ClassList.Select(x => x.ToString()).ToList()
-                    };
-
-                    if (info.Type == Type.Text || info.Type == Type.Link)
-                    {
-                        var text = element.ChildNodes.FirstOrDefault(o => o.NodeType == NodeType.Text && o.TextContent.Trim() != "");
-
-                        if (element is IHtmlScriptElement)
-                        {
-                            finalNode.Text = Regex.Unescape(element.Text());
-                        }
-                        else
-                        {
-                            if (text?.TextContent != null)
-                                finalNode.Text = Regex.Unescape(Regex.Replace(text?.TextContent.Replace("\n", "").Replace("\r", ""), "\\s+", " ").Trim());
-                        }
-                    }
-
-                    finalNode.Nodes = new List<Node>();
-
-                    //foreach (var node in info.Nodes)
-                    //{
-                    //    var el = element.QuerySelector(node.Selector);
-
-                    //    if (el == null)
-                    //    {
-                    //        continue;
-                    //    }
-
-                    //    finalNode.Nodes.AddRange(this.scrapNode(new InfoNode()
-                    //    {
-                    //        Selector = node.Selector,
-                    //        Element = el ?? element,
-                    //        Nodes = node.Nodes
-                    //    }));
-                    //}
-
-                    nodes.Add(finalNode);
-                }
-
-                return nodes;
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw e;
-            }
         }
     }
 }
