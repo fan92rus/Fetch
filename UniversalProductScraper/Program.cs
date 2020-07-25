@@ -22,35 +22,34 @@ namespace UniversalProductScraper
     using RestSharp;
     using ServiceStack;
 
+    using UniversalProductScraper.Models;
+
     class Program
     {
-        public static List<Table> Tables { get; set; }
+
         public static async Task Main(string[] args)
         {
-            var doc = LoadPage("http://fanserial.net/");
-
-            var mapper = new DomMapper();
-            var scraper = new Scraper();
-
-
-            var documentMap = mapper.ParseDocumentMap(doc);
-
-            File.WriteAllText("test.json", documentMap.ToSafeJson());
-
-            var data = scraper.ScrapNode(documentMap);
-
-            Converter converter = new Converter();
-            var tables = converter.Convert(data);
-            Tables = tables.Where(x => x.Properties.Any()).ToList();
-            File.WriteAllText("maaped.json", JsonConvert.SerializeObject(data));
             var server = new WebServer().WithCors().WithWebApi("/", x => x.WithController<TableResource>());
-
             await server.RunAsync();
 
             while (true) await Task.Delay(1000);
         }
+    }
 
-        private static IHtmlDocument LoadPage(string uri)
+    class ScrapingService
+    {
+        public readonly Converter Converter = new Converter();
+        public void ScrapPage(string url)
+        {
+            var doc = this.LoadPage(url);
+            var mapper = new DomMapper();
+            var documentMap = mapper.ParseDocumentMap(doc);
+            var data = new Scraper().ScrapNode(documentMap);
+            File.WriteAllText("testDAta.txt", JsonConvert.SerializeObject(data));
+            this.Converter.Convert(data);
+        }
+
+        private IHtmlDocument LoadPage(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);
             if (!isCreate)
@@ -72,10 +71,19 @@ namespace UniversalProductScraper
 
     class TableResource : WebApiController
     {
+        private readonly ScrapingService scrapingService = new ScrapingService();
+
         [Route(HttpVerbs.Any, "/tables")]
-        public List<Table> Tables()
+        public IEnumerable<Table> GetTables()
         {
-            return Program.Tables;
+            return this.scrapingService.Converter.GetTables();
+        }
+
+        [Route(HttpVerbs.Post, "/tables/add/")]
+        public IEnumerable<Table> AddLink([QueryField]string link)
+        {
+            this.scrapingService.ScrapPage(link);
+            return this.GetTables();
         }
     }
 }

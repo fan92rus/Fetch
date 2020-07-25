@@ -1,6 +1,7 @@
 <template>
   <div class="table">
-    <h2>{{table.Name}}</h2>
+    <h2>{{table.Key.Name}}</h2>
+    <h3>{{table.Key.PropertyHash.value}}</h3>
     <table>
       <thead>
         <tr>

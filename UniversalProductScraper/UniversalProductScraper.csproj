@@ -23,6 +23,18 @@
     <Reference Include="Microsoft.AspNetCore.Components">
       <HintPath>..\..\..\..\..\..\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.1.0\ref\netcoreapp3.1\Microsoft.AspNetCore.Components.dll</HintPath>
     </Reference>
+    <Reference Include="SimhashLib">
+      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\SimhashLib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.HashFunction.Core">
+      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.HashFunction.Interfaces">
+      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.HashFunction.Jenkins">
+      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Jenkins.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
