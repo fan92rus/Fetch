@@ -16,6 +16,11 @@ const tables = new Vapi({
     action: "addPage",
     path: ({ link }) => `/tables/add/?link=${link}`,
   })
+  .post({
+    property: "tables",
+    action: "clear",
+    path: "/tables/clear/",
+  })
   .getStore();
 
 export default tables;

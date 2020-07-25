@@ -1,14 +1,8 @@
-﻿using System;
-
-namespace UniversalProductScraper
+﻿namespace UniversalProductScraper
 {
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using AngleSharp;
-    using AngleSharp.Html.Dom;
-    using AngleSharp.Html.Parser;
 
     using EmbedIO;
     using EmbedIO.Actions;
@@ -18,8 +12,6 @@ namespace UniversalProductScraper
     using EmbedIO.Utilities;
     using EmbedIO.WebApi;
 
-    using Newtonsoft.Json;
-    using RestSharp;
     using ServiceStack;
 
     using UniversalProductScraper.Models;
@@ -36,39 +28,6 @@ namespace UniversalProductScraper
         }
     }
 
-    class ScrapingService
-    {
-        public readonly Converter Converter = new Converter();
-        public void ScrapPage(string url)
-        {
-            var doc = this.LoadPage(url);
-            var mapper = new DomMapper();
-            var documentMap = mapper.ParseDocumentMap(doc);
-            var data = new Scraper().ScrapNode(documentMap);
-            File.WriteAllText("testDAta.txt", JsonConvert.SerializeObject(data));
-            this.Converter.Convert(data);
-        }
-
-        private IHtmlDocument LoadPage(string uri)
-        {
-            var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);
-            if (!isCreate)
-                throw new ArgumentException("uri is invalid");
-
-            var rc = new RestClient();
-
-            var resp = rc.Execute(new RestRequest(target));
-
-            var config = Configuration.Default.WithDefaultLoader().WithCss().WithJs();
-
-            var context = BrowsingContext.New(config);
-            var parser = context.GetService<IHtmlParser>();
-            var doc = parser.ParseDocument(resp.Content);
-
-            return doc;
-        }
-    }
-
     class TableResource : WebApiController
     {
         private readonly ScrapingService scrapingService = new ScrapingService();
@@ -76,13 +35,21 @@ namespace UniversalProductScraper
         [Route(HttpVerbs.Any, "/tables")]
         public IEnumerable<Table> GetTables()
         {
-            return this.scrapingService.Converter.GetTables();
+            return this.scrapingService.GetTables();
         }
 
         [Route(HttpVerbs.Post, "/tables/add/")]
         public IEnumerable<Table> AddLink([QueryField]string link)
         {
             this.scrapingService.ScrapPage(link);
+            return this.GetTables();
+        }
+
+
+        [Route(HttpVerbs.Post, "/tables/clear/")]
+        public IEnumerable<Table> Clear()
+        {
+            this.scrapingService.Clear();
             return this.GetTables();
         }
     }

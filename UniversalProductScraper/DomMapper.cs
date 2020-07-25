@@ -119,6 +119,7 @@
                     continue;
 
                 var enumerator = parsed.Nodes.GetEnumerator();
+                var moved = false;
 
                 while (enumerator.MoveNext())
                 {
@@ -126,8 +127,9 @@
 
                     var count = element.QuerySelectorAll(n?.Selector).Length;
 
-                    if (count == 1 || parsed.Nodes.Count == 1)
+                    if (count == 1)
                     {
+                        moved = true;
                         var containerSelector = child.GetContainer().GetSelector();
                         n.Selector = n.Element.GetSelector(containerSelector);
                         parsed.Nodes.Remove(n);
@@ -140,7 +142,7 @@
                     }
                 }
 
-                var isOk = parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link;
+                var isOk = (parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link) && !moved;
 
                 if (isOk && node.Nodes.All(x => x.Selector != parsed.Selector) || parsed.Nodes.Any())
                     node.Nodes.Add(parsed);

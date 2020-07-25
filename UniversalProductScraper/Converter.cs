@@ -25,14 +25,6 @@
         }
         private IDictionary<string, string> ConvertNode(Node node, int id)
         {
-
-            Dictionary<string, string> SetParent(Dictionary<string, string> properties)
-            {
-                //properties.Add("parent_id", id.ToString());
-                //properties.Add("parent_selector", node.Selector);
-                return properties;
-            }
-
             var subElements = node.Nodes.Where(x => (x?.Nodes?.Any() ?? false)).ToList();
             var voidChildren = node.Nodes.Where(x => !(x?.Nodes?.Any() ?? false)).ToList();
 
@@ -55,17 +47,17 @@
                 {
                     if (@group.Count() == 1 && (this.Tables?.All(x => x.Key.Name != @group.Key) ?? true))
                     {
-                        var obj = SetParent(this.GetProperty(@group.FirstOrDefault()))
-                            .Where(x => !collection.ContainsKey(x.Key));
+                        var obj = this.GetProperty(@group.FirstOrDefault());
 
-                        foreach (var (key, value) in obj)
+                        foreach (var (key, value) in obj.Where(x => !collection.ContainsKey(x.Key)))
+                            collection.Add(key, value);
+                        var nodeProps = this.GetProperty(node);
+                        foreach (var (key, value) in nodeProps.Where(x => !collection.ContainsKey(x.Key)))
                             collection.Add(key, value);
                     }
                     else
                     {
-                        this.AddObject(
-                            @group.Key,
-                            @group.Select(this.GetProperty).Where(x => x.Any(e => e.Value != null)).Select(SetParent));
+                        this.AddObject(@group.Key, @group.Select(this.GetProperty).Where(x => x.Any(e => e.Value != null)));
                     }
                 }
 
@@ -100,10 +92,14 @@
                 this.Tables.Add(targetTable);
             }
 
-            if (!targetTable.Properties.Any(x => x.All(e => row.Values.Contains(e.Value))))
+            if (!targetTable.Properties.Any(x => row.Values.All(e => x.Values.Contains(e))))
             {
                 targetTable.Properties.Add(row);
                 targetTable.Properties.DistinctBy(x => x.Keys);
+            }
+            else
+            {
+
             }
         }
 
@@ -111,7 +107,7 @@
         {
             var localSimhash = new Simhash(Simhash.HashingType.Jenkins);
             hash = localSimhash;
-            hash.GenerateSimhash(string.Join(" ", els.Keys));
+            hash.GenerateSimhash(els.Keys.ToList());
 
             return this.Tables.FirstOrDefault(x => x.Key.Equals(new TableKey(name, localSimhash)));
         }
@@ -144,7 +140,7 @@
     {
         public new void Add(T item, TE item2)
         {
-            if (item != null && item2 != null)
+            if (item != null && item2 != null && !this.ContainsKey(item))
                 base.Add(item, item2);
         }
     }
@@ -160,7 +156,7 @@
         public Simhash PropertyHash { get; }
         public string Name { get; }
 
-        private const int EqualsDistance = 15;
+        private const int EqualsDistance = 20;
 
         public bool Equals(TableKey other)
         {

@@ -1,6 +1,8 @@
 <template>
   <div class="home">
     <button @click="getTables()">get Tables</button>
+    <button @click="clear()">RemoveAll</button>
+
     <button @click="addPage({params:{link}})">add page</button>
     <input v-model="link" />
     <div v-for="(table,id) in tables" :key="id">
@@ -29,7 +31,7 @@ export default {
     tables: (state) => state.tables,
   }),
   methods: {
-    ...mapActions(["getTables", "addPage"]),
+    ...mapActions(["getTables", "addPage", "clear"]),
   },
 };
 </script>
