@@ -3,8 +3,9 @@
     <button @click="getTables()">get Tables</button>
     <div v-for="(table,id) in tables" :key="id">
       <br />
-      <h2>{{table.Name}}</h2>
-      <div v-for="item in table.Properties" :key="item">{{ item }}</div>
+      <Table :table="table"/>
+      <!-- <h2>{{table.Name}}</h2>
+      <div v-for="item in table.Properties" :key="item">{{ item }}</div> -->
     </div>
   </div>
 </template>
@@ -13,15 +14,15 @@
 // @ is an alias to /src
 import { mapState, mapActions } from "vuex";
 import { AgGridVue } from "ag-grid-vue";
-
+import Table from "../components/Table";
 export default {
   name: "Home",
-  components: { AgGridVue },
+  components: { AgGridVue, Table },
   computed: mapState({
-    tables: state => state.tables
+    tables: (state) => state.tables,
   }),
   methods: {
-    ...mapActions(["getTables"])
-  }
+    ...mapActions(["getTables"]),
+  },
 };
 </script>

@@ -21,7 +21,7 @@
         public List<string> Collections = new List<string>();
         private IDictionary<string, string> ConvertNode(Node node, int id)
         {
-            if (node?.Selector != null && node.Selector == "li.literal__item > a")
+            if (node?.Selector != null && node.Selector == "div.literal")
             {
 
             }
@@ -52,7 +52,7 @@
 
             foreach (var group in voidChildren.GroupBy(x => x.Selector))
             {
-                if (@group.Count() == 1)
+                if (@group.Count() == 1 && (this.Tables?.All(x => x.Name != @group.Key) ?? true))
                 {
                     var obj = SetParent(this.GetProperty(@group.FirstOrDefault())).Where(x => !collection.ContainsKey(x.Key));
 
