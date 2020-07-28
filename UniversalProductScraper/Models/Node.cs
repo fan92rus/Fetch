@@ -8,7 +8,7 @@
 
     using Type = UniversalProductScraper.Type;
 
-    class Node
+    public class Node
     {
         public Node()
         {
@@ -36,7 +36,7 @@
 
                 if (this.Check(compare, node))
                     result.Add(node);
-                if (node.Nodes!=null)
+                if (node.Nodes != null)
                     foreach (var childNode in node.Nodes)
                     {
                         var res = this.FindAll(compare, childNode);

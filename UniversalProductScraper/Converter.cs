@@ -35,7 +35,7 @@
                 foreach (var group in subElements.GroupBy(x => x.Selector))
                 {
                     var @object = @group.Select(this.ConvertNode);
-                    this.AddObject(@group.Key, @object);
+                    this.AddObject(group.Key, node, @object);
                 }
             }
 
@@ -57,7 +57,7 @@
                     }
                     else
                     {
-                        this.AddObject(@group.Key, @group.Select(this.GetProperty).Where(x => x.Any(e => e.Value != null)));
+                        this.AddObject(group.Key, node, @group.Select(this.GetProperty).Where(x => x.Any(e => e.Value != null)));
                     }
                 }
 
@@ -68,27 +68,23 @@
 
         }
 
-        private void AddObject(string name, IEnumerable<IDictionary<string, string>> els)
+        private void AddObject(string key, Node node, IEnumerable<IDictionary<string, string>> els)
         {
-            if (name.Contains("nth-child"))
-                return;
-
             foreach (var el in els)
-            {
-                this.AddObject(name, el);
-            }
+                if (el != null)
+                    this.AddObject(TableKey.Create(node, key, el), el);
         }
 
-        private void AddObject(string name, IDictionary<string, string> row)
+        private void AddObject(TableKey tableKey, IDictionary<string, string> row)
         {
             if (row == null)
                 return;
 
-            var targetTable = this.FindTable(name, row, out var hash);
+            var targetTable = this.FindTable(tableKey);
 
             if (targetTable == null)
             {
-                targetTable = new Table(name, hash, new List<IDictionary<string, string>>());
+                targetTable = new Table(tableKey, new List<IDictionary<string, string>>());
                 this.Tables.Add(targetTable);
             }
 
@@ -103,13 +99,9 @@
             }
         }
 
-        private Table FindTable(string name, IDictionary<string, string> els, out Simhash hash)
+        private Table FindTable(TableKey key)
         {
-            var localSimhash = new Simhash(Simhash.HashingType.Jenkins);
-            hash = localSimhash;
-            hash.GenerateSimhash(els.Keys.ToList());
-
-            return this.Tables.FirstOrDefault(x => x.Key.Equals(new TableKey(name, localSimhash)));
+            return this.Tables.FirstOrDefault(x => x.Key.Equals(key));
         }
 
         private Dictionary<string, string> GetProperty(Node gNode)
@@ -145,34 +137,27 @@
         }
     }
 
-    public class TableKey : IEquatable<TableKey>
+    public struct TableKey : IEquatable<TableKey>
     {
-        public TableKey(string name, Simhash propertyHash)
+        public TableKey(string name, string containerSelector, Simhash propertyHash)
         {
             this.Name = name;
+            this.ParentKey = containerSelector;
             this.PropertyHash = propertyHash;
         }
 
         public Simhash PropertyHash { get; }
         public string Name { get; }
+        public string ParentKey { get; }
 
-        private const int EqualsDistance = 20;
+        private const int EqualsDistance = 15;
 
         public bool Equals(TableKey other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
             var distance = this.PropertyHash.distance(other.PropertyHash);
-            return distance < EqualsDistance && string.Equals(this.Name, other.Name);
+            return distance < 10 && other.ParentKey == this.ParentKey && string.Equals(this.Name, other.Name);
         }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && this.Equals((TableKey)obj);
-        }
-
+        
         public override int GetHashCode()
         {
             unchecked
@@ -180,12 +165,19 @@
                 return ((this.PropertyHash != null ? this.PropertyHash.GetHashCode() : 0) * 397) ^ (this.Name != null ? this.Name.GetHashCode() : 0);
             }
         }
+
+        public static TableKey Create(Node node, string key, IDictionary<string, string> els)
+        {
+            var simhash = new Simhash(Simhash.HashingType.Jenkins);
+            simhash.GenerateSimhash(els.Keys.ToList());
+            return new TableKey(key, node.ParentNode?.Selector, simhash);
+        }
     }
     public class Table
     {
-        public Table(string name, Simhash hash, List<IDictionary<string, string>> properties)
+        public Table(TableKey key, List<IDictionary<string, string>> properties)
         {
-            this.Key = new TableKey(name, hash);
+            this.Key = key;
             this.Properties = properties;
         }
 

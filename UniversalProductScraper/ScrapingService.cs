@@ -20,6 +20,10 @@
         {
             return this.converter.GetTables();
         }
+        public void Clear()
+        {
+            this.converter = new Converter();
+        }
         public void ScrapPage(string url)
         {
             var doc = this.LoadPage(url);
@@ -31,10 +35,6 @@
             this.converter.Convert(data);
         }
 
-        public void Clear()
-        {
-            this.converter = new Converter();
-        }
         private IHtmlDocument LoadPage(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);

@@ -187,7 +187,7 @@
 
                     var index = parent.Children.Where(_ => _.GetType() == element.GetType()).Index(element);
 
-                    return index == 0 ? selector : $":nth-child({index + 1})";
+                    return index == 0 ? selector : $"{selector}:nth-child({index + 1})";
                 }
             }
 

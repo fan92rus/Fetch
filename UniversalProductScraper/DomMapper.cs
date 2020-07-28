@@ -1,15 +1,17 @@
 ﻿namespace UniversalProductScraper
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
 
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
     using MoreLinq;
     using UniversalProductScraper.Models;
 
-    enum Type
+    public enum Type
     {
         Default,
         Link,
@@ -110,43 +112,50 @@
                 if (!isOk)
                     return null;
             }
-
-            foreach (var child in element.Children)
-            {
-                var parsed = this.ParseElementMap(child);
-
-                if (parsed == null)
-                    continue;
-
-                var enumerator = parsed.Nodes.GetEnumerator();
-                var moved = false;
-
-                while (enumerator.MoveNext())
-                {
-                    var n = enumerator.Current;
-
-                    var count = element.QuerySelectorAll(n?.Selector).Length;
-
-                    if (count == 1)
+            object locker = new object();
+            int i = 0;
+            Parallel.ForEach(element.Children,
+                child =>
                     {
-                        moved = true;
-                        var containerSelector = child.GetContainer().GetSelector();
-                        n.Selector = n.Element.GetSelector(containerSelector);
-                        parsed.Nodes.Remove(n);
-                        node.Nodes.Add(n);
-                        enumerator = parsed.Nodes.GetEnumerator();
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
+                        var parsed = this.ParseElementMap(child);
 
-                var isOk = (parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link) && !moved;
+                        if (parsed == null)
+                            return;
 
-                if (isOk && node.Nodes.All(x => x.Selector != parsed.Selector) || parsed.Nodes.Any())
-                    node.Nodes.Add(parsed);
-            }
+                        var enumerator = parsed.Nodes.GetEnumerator();
+                        var moved = false;
+
+                        while (enumerator.MoveNext())
+                        {
+                            var n = enumerator.Current;
+
+                            var count = element.QuerySelectorAll(n?.Selector).Length;
+
+                            if (count == 1 && n?.Element?.TextContent?.RemoveSpaces() != parsed?.Element?.TextContent?.RemoveSpaces())
+                            {
+                                moved = true;
+                                var containerSelector = child.GetContainer().GetSelector();
+                                n.Selector = n.Element.GetSelector(containerSelector);
+                                parsed.Nodes.Remove(n);
+                                node.Nodes.Add(n);
+                                enumerator = parsed.Nodes.GetEnumerator();
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        var isOk = (parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link) && !moved;
+
+                        lock (locker)
+                        {
+                            if (isOk && node.Nodes.All(x => x.Selector != parsed.Selector) || parsed.Nodes.Any())
+                                node.Nodes.Add(parsed);
+
+                            Console.WriteLine($"{parsed.Selector} {i++}");
+                        }
+                    });
 
             var nodes = node.Nodes.DistinctBy(x => x.Selector + "_" + string.Join("_", x.Nodes.Select(e => e.Selector)))/*.ToList();//*/.GroupBy(x => x.Selector);
             node.Nodes = new List<InfoNode>();
