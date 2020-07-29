@@ -2,48 +2,43 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Text.RegularExpressions;
-
-    using AngleSharp.Css.Dom;
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
 
+    using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
     using Node = Models.Node;
 
     class Scraper
     {
-        public Node ScrapNode(InfoNode info, Node parent = null)
+        public Node ScrapNode(ITree<MapperNode> info, Node parent = null)
         {
-            var final = SetNode(info, info.Element, parent);
+            var final = SetNode(info.Item, info.Item.Element, parent);
+
             final.Nodes = new List<Node>();
 
-            foreach (var child in info.Nodes)
+            foreach (var child in info.Children)
             {
-                if (child.Type == Type.Container)
+                if (child.Item.Type == Type.Container)
                 {
-                    var childrenAll = info.Element.QuerySelectorAll(child.Selector);
+                    var childrenAll = info.Item.Element.QuerySelectorAll(child.Item.Selector);
 
                     foreach (var c in childrenAll)
                     {
-                        final.Nodes.Add(this.ScrapNode(new InfoNode()
-                        {
-                            Selector = child.Selector,
-                            Nodes = child.Nodes,
-                            Element = c
-                        }, final));
+                        child.Item.Element = c;
+                        final.Nodes.Add(this.ScrapNode(child, final));
                     }
 
                     continue;
                 }
 
-                var children = info.Element.QuerySelectorAll(child.Selector);
+                var children = info.Item.Element.QuerySelectorAll(child.Item.Selector);
 
                 foreach (var element in children)
                 {
-                    var node = SetNode(child, element, final);
+                    var node = SetNode(child.Item, element, final);
                     final.Nodes.Add(node);
                 }
             }
@@ -51,13 +46,12 @@
             return final;
         }
 
-        private static Node SetNode(InfoNode child, IElement element, Node parent = null)
+        private static Node SetNode(MapperNode child, IElement element, Node parent = null)
         {
             var n = new Node()
             {
                 Selector = child.Selector,
-                Attributes =
-                                element.Attributes.Where(x => x.Name != "class").Where(x => x.Name != "d")
+                Attributes = element.Attributes.Where(x => x.Name != "class").Where(x => x.Name != "d")
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
                 Type = child.Type,
                 ParentNode = parent
@@ -65,13 +59,11 @@
 
             var flags = (int)child.Element.Flags;
 
-            bool checkFlags(int flags)
+            bool CheckFlags(int flag) => flag <= 270 && flag >= 250 || flag >= 306 && flag <= 340 || (flag >= 2304 && flag <= 2340);
+
+            if (CheckFlags(flags))
             {
-                return flags <= 270 && flags >= 250 || flags >= 306 && flags <= 340 || (flags >= 2304 && flags <= 2340);
-            }
-            if (checkFlags(flags))
-            {
-                var count = element.ChildNodes.Count(x => (x.NodeType == NodeType.Text || checkFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces()));
+                var count = element.ChildNodes.Count(x => (x.NodeType == NodeType.Text || CheckFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces()));
 
                 var textElements = element.ChildNodes?.Where(x => !string.IsNullOrEmpty(x.TextContent.RemoveSpaces()) && (x.NodeType == NodeType.Text));
 

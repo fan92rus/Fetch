@@ -32,10 +32,11 @@
         {
             TestGraphConverter testGraphConverter = new TestGraphConverter();
             Converter converter = new Converter();
-
-            var firstGraph = testGraphConverter.Test(GetNode("https://www.sparheld.de/gutscheine/discountlens"));
+            var node = GetNode("https://www.sparheld.de/gutscheine/discountlens");
+            File.WriteAllText("data\\node.json", JsonConvert.SerializeObject(node));
+            //var firstGraph = testGraphConverter.Test();
             //var secondGraph = testGraphConverter.Test(GetNode("https://www.sparheld.de/gutscheine/levis"));
-            var testData = firstGraph.Vertices.Where(x => x.Selector == "div.voucherCard.box.voucherCard--default");
+            //ar testData = firstGraph.Vertices.Where(x => x.Selector == "div.voucherCard.box.voucherCard--default");
 
             //var unical = secondGraph.Vertices.Where(x => firstGraph.Vertices.All(a => !a.Equals(x))).Select(x => x.ParentNode).Distinct().ToList().GroupBy(x => x.Selector);
             Console.WriteLine();
@@ -59,6 +60,10 @@
             var mapper = new DomMapper();
             var doc = scrapingService.LoadPage(url);
             var documentMap = mapper.ParseDocumentMap(doc);
+
+            File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap));
+            var target = documentMap.Children.ElementAt(1).Children
+                .Where(x => x.Item.Selector == "div.pageContent");
             var data = new Scraper().ScrapNode(documentMap);
             return data;
         }

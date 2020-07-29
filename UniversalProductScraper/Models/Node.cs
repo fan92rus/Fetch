@@ -8,7 +8,6 @@
 
     using UniversalProductScraper.Graph;
 
-    using Type = UniversalProductScraper.Type;
 
     public class Node : BaseNode
     {

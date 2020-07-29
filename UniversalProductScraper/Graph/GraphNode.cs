@@ -8,63 +8,100 @@ namespace UniversalProductScraper.Graph
     using System.ComponentModel;
     using System.Linq;
 
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     using QuickGraph;
     using QuickGraph.Graphviz;
 
     using UniversalProductScraper.Models;
+    using Type = UniversalProductScraper.Type;
 
-    public interface ITree<T>
+    public interface ITree<T> : IEquatable<T>
     {
         T Item { get; }
-        IEnumerable<ITree<T>> Children { get; }
+        ICollection<ITree<T>> Children { get; }
+        IEnumerable<T> GetCollection();
         bool Contains(T item);
 
         void Add(ITree<T> item);
         void Add(T item);
+
+        bool Remove(T item);
+
+        bool Remove(ITree<T> item);
     }
 
-    class Tree<T> : ITree<T>, IEnumerable<T> where T : class
+
+    class Tree<T> : ITree<T> where T : class
     {
         public Tree(T root)
         {
             this.Item = root;
             this.Children = new List<ITree<T>>();
         }
-        public void Add(ITree<T> item)
+
+        public Tree(T root, ITree<T> parent) : this(root) => this.Parent = parent;
+
+        public void Add(ITree<T> item) => (this.Children as List<ITree<T>>)?.Add(item);
+
+        public void Add(T item) => (this.Children as List<ITree<T>>)?.Add(new Tree<T>(item, this));
+
+        public bool Remove(T item)
         {
-            (this.Children as List<ITree<T>>)?.Add(item);
+            var isRemoved = item == this.Item && this.Parent != null && this.Parent.Remove(this);
+            if (isRemoved) return true;
+
+            var target = this.Children.FirstOrDefault(x => x.Item == item);
+            if (target != null)
+            {
+                isRemoved = this.Children.Remove(target);
+            }
+
+            return isRemoved;
         }
 
-        public void Add(T item)
+        public bool Remove(ITree<T> item)
         {
-            (this.Children as List<ITree<T>>)?.Add(new Tree<T>(item));
+            var target = this.Children.FirstOrDefault(x => x == item);
+            return this.Children.Remove(target);
         }
 
         public T Item { get; }
+        private ITree<T> Parent { get; set; }
+        public ICollection<ITree<T>> Children { get; }
 
-        public IEnumerable<ITree<T>> Children { get; }
+        public bool Contains(T item) => this.Item == item || this.Children.Any(x => x.Contains(item));
+        public bool Contains(ITree<T> item) => this.Children.Any(x => x == item);
 
-        public bool Contains(T item)
+        public IEnumerable<T> GetCollection()
         {
-            return this.Item == item || this.Children.Any(x => x.Contains(item));
+            var list = new List<T> { this.Item };
+
+            list.AddRange(this.Children.SelectMany(child => child.GetCollection()));
+
+            return list;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        protected bool Equals(Tree<T> other)
         {
-            yield return this.Item;
+            return EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
+        }
 
-            foreach (var child in this.Children)
+        public bool Equals(T obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return this.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
             {
-                foreach (var item in (IEnumerable<T>)child)
-                {
-                    yield return item;
-                }
+                return (EqualityComparer<T>.Default.GetHashCode(this.Item) * 397) ^ (this.Children != null ? this.Children.GetHashCode() : 0);
             }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
     }
 

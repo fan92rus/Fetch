@@ -28,15 +28,15 @@
         }
         public void ScrapPage(string url)
         {
-            var doc = this.LoadPage(url);
-            var mapper = new DomMapper();
-            var documentMap = mapper.ParseDocumentMap(doc);
-            var data = new Scraper().ScrapNode(documentMap);
-            TestGraphConverter testGraphConverter = new TestGraphConverter();
-            testGraphConverter.Test(data);
-            File.WriteAllText("testMap.json", JsonConvert.SerializeObject(documentMap));
-            File.WriteAllText("testDAta.json", JsonConvert.SerializeObject(data));
-            this.converter.Convert(data);
+            //var doc = this.LoadPage(url);
+            //var mapper = new DomMapper();
+            //var documentMap = mapper.ParseDocumentMap(doc);
+            //var data = new Scraper().ScrapNode(documentMap);
+            //TestGraphConverter testGraphConverter = new TestGraphConverter();
+            //testGraphConverter.Test(data);
+            //File.WriteAllText("testMap.json", JsonConvert.SerializeObject(documentMap));
+            //File.WriteAllText("testDAta.json", JsonConvert.SerializeObject(data));
+            //this.converter.Convert(data);
         }
 
         public IHtmlDocument LoadPage(string uri)

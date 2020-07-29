@@ -1,14 +1,12 @@
 ﻿namespace UniversalProductScraper
 {
+    using AngleSharp.Dom;
+    using AngleSharp.Html.Dom;
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-
-    using AngleSharp.Dom;
-    using AngleSharp.Html.Dom;
-    using MoreLinq;
+    using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
 
     public enum Type
@@ -23,34 +21,17 @@
 
     class DomMapper
     {
-
-        public InfoNode ParseDocumentMap(IHtmlDocument doc)
+        public ITree<MapperNode> ParseDocumentMap(IHtmlDocument doc)
         {
             var head = doc.QuerySelector("head");
             var body = doc.QuerySelector("body");
+            var root = new MapperNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = Type.Container };
 
-            var finalNode = new InfoNode()
-            {
-                Element = doc.QuerySelector("html"),
-                Selector = "html",
-                Nodes = new List<InfoNode>()
-                                                {
-                                                    new InfoNode()
-                                                        {
-                                                            Element = head,
-                                                            Selector = "head",
-                                                            Nodes = this.ParseElementMap(head).Nodes
-                                                        },
-                                                    new InfoNode()
-                                                        {
-                                                            Element = body,
-                                                            Selector = "body",
-                                                            Nodes = this.ParseElementMap(body).Nodes
-                                                        }
-                                                }
-            };
+            var finalNode = new Tree<MapperNode>(root);
 
-            this.DefineTypes(finalNode);
+            finalNode.Add(this.ParseElementMap(head));
+            finalNode.Add(this.ParseElementMap(body));
+
 
             return finalNode;
         }
@@ -90,10 +71,9 @@
             }
         }
 
-        public InfoNode ParseElementMap(IElement element)
+        public ITree<MapperNode> ParseElementMap(IElement element, ITree<MapperNode> parent = null)
         {
-
-            var node = new InfoNode
+            var node = new MapperNode
             {
                 Element = element,
                 Selector = element.ParentElement != null
@@ -101,44 +81,53 @@
                                               : element.GetSelector(),
             };
 
+            var tree = new Tree<MapperNode>(node, parent);
 
-            if (node.Selector.Contains("data-table"))
-            {
-
-            }
             if (!element.Children.Any())
             {
                 var isOk = element.IsText() || element.Attributes.Any(p => p.Name != "class");
+
                 if (!isOk)
                     return null;
             }
-            object locker = new object();
-            int i = 0;
+
+            var locker = new object();
+            var i = 0;
+
             Parallel.ForEach(element.Children,
                 child =>
                     {
-                        var parsed = this.ParseElementMap(child);
+                        var parsed = this.ParseElementMap(child, tree);
 
                         if (parsed == null)
                             return;
 
-                        var enumerator = parsed.Nodes.GetEnumerator();
-                        var moved = false;
+                        bool moved = false;
 
-                        while (enumerator.MoveNext())
+                        foreach (var item in parsed.Children.ToList())
                         {
-                            var n = enumerator.Current;
+                            var count = element.QuerySelectorAll(item.Item?.Selector).Length;
 
-                            var count = element.QuerySelectorAll(n?.Selector).Length;
-
-                            if (count == 1 && n?.Element?.TextContent?.RemoveSpaces() != parsed?.Element?.TextContent?.RemoveSpaces())
+                            if (count == 1)
                             {
-                                moved = true;
-                                var containerSelector = child.GetContainer().GetSelector();
-                                n.Selector = n.Element.GetSelector(containerSelector);
-                                parsed.Nodes.Remove(n);
-                                node.Nodes.Add(n);
-                                enumerator = parsed.Nodes.GetEnumerator();
+                                if (item.Item?.Element?.TextContent?.RemoveSpaces() == parsed?.Item?.Element.TextContent?.RemoveSpaces())
+                                {
+                                    var isRemoved = parsed.Remove(item);
+                                }
+                                else
+                                {
+                                    moved = true;
+
+                                    var containerSelector = child.GetContainer().GetSelector();
+
+                                    if (item?.Item == null) continue;
+
+                                    item.Item.Selector = item.Item.Element.GetSelector(containerSelector);
+
+                                    var isRemoved = parsed.Remove(item);
+
+                                    tree.Add(item);
+                                }
                             }
                             else
                             {
@@ -146,36 +135,40 @@
                             }
                         }
 
-                        var isOk = (parsed.Element.IsText() || parsed.Element.Attributes.Any(p => p.Name != "class") || parsed.Type == Type.Link) && !moved;
+                        var isOk = parsed.Item != null && ((parsed?.Item?.Element?.TextContent != null)
+                                                           || parsed.Children.Any()
+                                                           || parsed.Item?.Element?.Attributes != null && (bool)parsed.Item?.Element?.Attributes?.Any(p => p?.Name != "class")
+                                                           || parsed?.Item?.Type == Type.Link);
 
                         lock (locker)
                         {
-                            if (isOk && node.Nodes.All(x => x.Selector != parsed.Selector) || parsed.Nodes.Any())
-                                node.Nodes.Add(parsed);
+                            if (isOk)
+                                tree.Add(parsed);
 
-                            Console.WriteLine($"{parsed.Selector} {i++}");
+                            Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
                         }
                     });
 
-            var nodes = node.Nodes.DistinctBy(x => x.Selector + "_" + string.Join("_", x.Nodes.Select(e => e.Selector)))/*.ToList();//*/.GroupBy(x => x.Selector);
-            node.Nodes = new List<InfoNode>();
+            //var nodes = node.Nodes.DistinctBy(x => x.Selector + "_" + string.Join("_", x.Nodes.Select(e => e.Selector)))/*.ToList();//*/.GroupBy(x => x.Selector);
 
-            foreach (var group in nodes)
-            {
-                var el = group.First();
+            //node.Nodes = new List<MapperNode>();
 
-                foreach (var ge in group.SelectMany(g => g.Nodes))
-                {
-                    if (el.Nodes.All(x => x.Selector != ge.Selector))
-                    {
-                        el.Nodes.Add(ge);
-                    }
-                }
+            //foreach (var group in nodes)
+            //{
+            //    var el = group.First();
 
-                node.Nodes.Add(el);
-            }
+            //    foreach (var ge in group.SelectMany(g => g.Nodes))
+            //    {
+            //        if (el.Nodes.All(x => x.Selector != ge.Selector))
+            //        {
+            //            el.Nodes.Add(ge);
+            //        }
+            //    }
 
-            return node;
+            //    node.Nodes.Add(el);
+            //}
+
+            return tree;
         }
     }
 }
