@@ -12,6 +12,8 @@
 
     using RestSharp;
 
+    using UniversalProductScraper.Graph;
+
     class ScrapingService
     {
         private Converter converter = new Converter();
@@ -30,12 +32,14 @@
             var mapper = new DomMapper();
             var documentMap = mapper.ParseDocumentMap(doc);
             var data = new Scraper().ScrapNode(documentMap);
+            TestGraphConverter testGraphConverter = new TestGraphConverter();
+            testGraphConverter.Test(data);
             File.WriteAllText("testMap.json", JsonConvert.SerializeObject(documentMap));
             File.WriteAllText("testDAta.json", JsonConvert.SerializeObject(data));
             this.converter.Convert(data);
         }
 
-        private IHtmlDocument LoadPage(string uri)
+        public IHtmlDocument LoadPage(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);
             if (!isCreate)

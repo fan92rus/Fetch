@@ -6,9 +6,11 @@
 
     using Newtonsoft.Json;
 
+    using UniversalProductScraper.Graph;
+
     using Type = UniversalProductScraper.Type;
 
-    public class Node
+    public class Node : BaseNode
     {
         public Node()
         {
@@ -16,11 +18,6 @@
             //this.Classes = new List<string>();
         }
 
-        public Type Type { get; set; }
-        public string Selector { get; set; }
-        public List<KeyValuePair<string, string>> Attributes { get; set; }
-        //public List<string> Classes { get; set; }
-        public string Text { get; set; }
         public List<Node> Nodes { get; set; }
 
         [JsonIgnore]
