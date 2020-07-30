@@ -3,39 +3,35 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using MoreLinq;
-
     using SimhashLib;
-
-    using UniversalProductScraper.Models;
+    using UniversalProductScraper.Graph;
 
     class Converter
     {
         private List<Table> Tables { get; set; } = new List<Table>();
 
-        public void Convert(Node node)
+        public IEnumerable<Table> Convert(ITree<BaseNode> tree)
         {
-            this.ConvertNode(node, 0);
+            this.ConvertNode(tree, 0);
+            return this.Tables;
         }
 
         public IEnumerable<Table> GetTables()
         {
             return this.Tables.Where(x => x.Properties != null && x.Properties.Any() && x.Properties.Any(e => e?.Values?.Any() ?? false));
         }
-        private IDictionary<string, string> ConvertNode(Node node, int id)
+        private IDictionary<string, string> ConvertNode(ITree<BaseNode> tree, int id)
         {
-            var subElements = node.Nodes.Where(x => (x?.Nodes?.Any() ?? false)).ToList();
-            var voidChildren = node.Nodes.Where(x => !(x?.Nodes?.Any() ?? false)).ToList();
-
-            Console.WriteLine(id);
+            var subElements = tree.Children.Where(x => (x?.Children?.Any() ?? false)).ToList();
+            var voidChildren = tree.Children.Where(x => !(x?.Children?.Any() ?? false)).ToList();
 
             if (subElements.Any())
             {
-                foreach (var group in subElements.GroupBy(x => x.Selector))
+                foreach (var group in subElements.GroupBy(x => x.Item.Selector))
                 {
                     var @object = @group.Select(this.ConvertNode);
-                    this.AddObject(group.Key, node, @object);
+                    this.AddObject(group.Key, tree, @object);
                 }
             }
 
@@ -43,21 +39,21 @@
             {
                 var collection = new MaybeDictionary<string, string>();
 
-                foreach (var group in voidChildren.GroupBy(x => x.Selector))
+                foreach (var group in voidChildren.GroupBy(x => x.Item.Selector))
                 {
                     if (@group.Count() == 1 && (this.Tables?.All(x => x.Key.Name != @group.Key) ?? true))
                     {
-                        var obj = this.GetProperty(@group.FirstOrDefault());
+                        var obj = this.GetProperty(@group.FirstOrDefault()?.Item);
 
                         foreach (var (key, value) in obj.Where(x => !collection.ContainsKey(x.Key)))
                             collection.Add(key, value);
-                        var nodeProps = this.GetProperty(node);
+                        var nodeProps = this.GetProperty(tree.Item);
                         foreach (var (key, value) in nodeProps.Where(x => !collection.ContainsKey(x.Key)))
                             collection.Add(key, value);
                     }
                     else
                     {
-                        this.AddObject(group.Key, node, @group.Select(this.GetProperty).Where(x => x.Any(e => e.Value != null)));
+                        this.AddObject(group.Key, tree, @group.Select(x => this.GetProperty(x.Item)).Where(x => x.Any(e => e.Value != null)));
                     }
                 }
 
@@ -68,11 +64,11 @@
 
         }
 
-        private void AddObject(string key, Node node, IEnumerable<IDictionary<string, string>> els)
+        private void AddObject(string key, ITree<BaseNode> tree, IEnumerable<IDictionary<string, string>> els)
         {
             foreach (var el in els)
                 if (el != null)
-                    this.AddObject(TableKey.Create(node, key, el), el);
+                    this.AddObject(TableKey.Create(tree, key, el), el);
         }
 
         private void AddObject(TableKey tableKey, IDictionary<string, string> row)
@@ -104,7 +100,7 @@
             return this.Tables.FirstOrDefault(x => x.Key.Equals(key));
         }
 
-        private Dictionary<string, string> GetProperty(Node gNode)
+        private Dictionary<string, string> GetProperty(BaseNode gNode)
         {
             Dictionary<string, string> dList = new Dictionary<string, string>();
 
@@ -157,7 +153,7 @@
             var distance = this.PropertyHash.distance(other.PropertyHash);
             return distance < 10 && other.ParentKey == this.ParentKey && string.Equals(this.Name, other.Name);
         }
-        
+
         public override int GetHashCode()
         {
             unchecked
@@ -166,11 +162,11 @@
             }
         }
 
-        public static TableKey Create(Node node, string key, IDictionary<string, string> els)
+        public static TableKey Create(ITree<BaseNode> tree, string key, IDictionary<string, string> els)
         {
             var simhash = new Simhash(Simhash.HashingType.Jenkins);
             simhash.GenerateSimhash(els.Keys.ToList());
-            return new TableKey(key, node.ParentNode?.Selector, simhash);
+            return new TableKey(key, tree?.Parent?.Item?.Selector, simhash);
         }
     }
     public class Table

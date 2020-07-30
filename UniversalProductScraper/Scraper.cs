@@ -13,12 +13,10 @@
 
     class Scraper
     {
-        public Node ScrapNode(ITree<MapperNode> info, Node parent = null)
+        public ITree<BaseNode> ScrapNode(ITree<InfoNode> info)
         {
-            var final = SetNode(info.Item, info.Item.Element, parent);
-
-            final.Nodes = new List<Node>();
-
+            ITree<BaseNode> tree = new Tree<BaseNode>(this.SetNode(info.Item));
+            
             foreach (var child in info.Children)
             {
                 if (child.Item.Type == Type.Container)
@@ -28,7 +26,7 @@
                     foreach (var c in childrenAll)
                     {
                         child.Item.Element = c;
-                        final.Nodes.Add(this.ScrapNode(child, final));
+                        tree.Add(this.ScrapNode(child));
                     }
 
                     continue;
@@ -36,25 +34,22 @@
 
                 var children = info.Item.Element.QuerySelectorAll(child.Item.Selector);
 
-                foreach (var element in children)
-                {
-                    var node = SetNode(child.Item, element, final);
-                    final.Nodes.Add(node);
-                }
+                foreach (var element in children) tree.Add(this.SetNode(child.Item, element));
             }
 
-            return final;
+            return tree;
         }
 
-        private static Node SetNode(MapperNode child, IElement element, Node parent = null)
+        private BaseNode SetNode(InfoNode child) => this.SetNode(child, child.Element);
+
+        private BaseNode SetNode(InfoNode child, IElement element)
         {
-            var n = new Node()
+            var n = new BaseNode()
             {
                 Selector = child.Selector,
                 Attributes = element.Attributes.Where(x => x.Name != "class").Where(x => x.Name != "d")
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
                 Type = child.Type,
-                ParentNode = parent
             };
 
             var flags = (int)child.Element.Flags;

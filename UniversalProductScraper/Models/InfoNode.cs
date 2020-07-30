@@ -10,18 +10,8 @@
 
     using Type = UniversalProductScraper.Type;
 
-    class InfoNode
-    {
-        [JsonIgnore]
-        public IElement Element { get; set; }
-        public string Selector { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public Type Type { get; set; }
-        public List<InfoNode> Nodes { get; set; } = new List<InfoNode>();
-    }
-
-    class MapperNode : IEquatable<MapperNode>
+    class InfoNode : IEquatable<InfoNode>
     {
         [JsonIgnore]
         public IElement Element { get; set; }
@@ -30,7 +20,7 @@
         [JsonConverter(typeof(StringEnumConverter))]
         public Type Type { get; set; }
 
-        public bool Equals(MapperNode other)
+        public bool Equals(InfoNode other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -42,7 +32,7 @@
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((MapperNode)obj);
+            return this.Equals((InfoNode)obj);
         }
 
         public override int GetHashCode()

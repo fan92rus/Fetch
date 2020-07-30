@@ -22,25 +22,19 @@ namespace UniversalProductScraper.Graph
         T Item { get; }
         ICollection<ITree<T>> Children { get; }
         IEnumerable<T> GetCollection();
+        ITree<T> Parent { get; set; }
         bool Contains(T item);
-
         void Add(ITree<T> item);
         void Add(T item);
-
         bool Remove(T item);
-
         bool Remove(ITree<T> item);
     }
 
 
     class Tree<T> : ITree<T> where T : class
     {
-        public Tree(T root)
-        {
-            this.Item = root;
-            this.Children = new List<ITree<T>>();
-        }
-
+        public Tree() => this.Children = new List<ITree<T>>();
+        public Tree(T root) : this() => this.Item = root;
         public Tree(T root, ITree<T> parent) : this(root) => this.Parent = parent;
 
         public void Add(ITree<T> item) => (this.Children as List<ITree<T>>)?.Add(item);
@@ -68,9 +62,10 @@ namespace UniversalProductScraper.Graph
         }
 
         public T Item { get; }
-        private ITree<T> Parent { get; set; }
+        public ITree<T> Parent { get; set; }
         public ICollection<ITree<T>> Children { get; }
-
+        public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
+        public bool Contains(Func<T, bool> item) => this.Item.Equals(item) || this.Children.Any(x => item.Invoke(x.Item));
         public bool Contains(T item) => this.Item == item || this.Children.Any(x => x.Contains(item));
         public bool Contains(ITree<T> item) => this.Children.Any(x => x == item);
 

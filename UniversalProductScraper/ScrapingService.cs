@@ -18,25 +18,26 @@
     {
         private Converter converter = new Converter();
 
-        public IEnumerable<Table> GetTables()
-        {
-            return this.converter.GetTables();
-        }
+
         public void Clear()
         {
             this.converter = new Converter();
         }
-        public void ScrapPage(string url)
+
+        public IEnumerable<Table> ScrapPage(string url)
         {
-            //var doc = this.LoadPage(url);
-            //var mapper = new DomMapper();
-            //var documentMap = mapper.ParseDocumentMap(doc);
-            //var data = new Scraper().ScrapNode(documentMap);
-            //TestGraphConverter testGraphConverter = new TestGraphConverter();
-            //testGraphConverter.Test(data);
-            //File.WriteAllText("testMap.json", JsonConvert.SerializeObject(documentMap));
-            //File.WriteAllText("testDAta.json", JsonConvert.SerializeObject(data));
-            //this.converter.Convert(data);
+            var doc = this.LoadPage(url);
+            var mapper = new DomMapper();
+            var documentMap = mapper.ParseDocumentMap(doc);
+            var data = new Scraper().ScrapNode(documentMap);
+
+            File.WriteAllText("data\\node.json", JsonConvert.SerializeObject(data, new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            }));
+
+            this.converter.Convert(data);
+            return this.converter.GetTables();
         }
 
         public IHtmlDocument LoadPage(string uri)

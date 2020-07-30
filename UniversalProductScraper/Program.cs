@@ -30,22 +30,23 @@
 
         public static async Task Main(string[] args)
         {
-            TestGraphConverter testGraphConverter = new TestGraphConverter();
-            Converter converter = new Converter();
-            var node = GetNode("https://www.sparheld.de/gutscheine/discountlens");
-            File.WriteAllText("data\\node.json", JsonConvert.SerializeObject(node));
-            //var firstGraph = testGraphConverter.Test();
-            //var secondGraph = testGraphConverter.Test(GetNode("https://www.sparheld.de/gutscheine/levis"));
-            //ar testData = firstGraph.Vertices.Where(x => x.Selector == "div.voucherCard.box.voucherCard--default");
-
-            //var unical = secondGraph.Vertices.Where(x => firstGraph.Vertices.All(a => !a.Equals(x))).Select(x => x.ParentNode).Distinct().ToList().GroupBy(x => x.Selector);
-            Console.WriteLine();
-
-            //File.WriteAllText("unicalElements.json", JsonConvert.SerializeObject(unical, Formatting.Indented, new JsonSerializerSettings()
+            #region unical
+            //var node = GetNode("https://www.sparheld.de/gutscheine/discountlens");
+            //File.WriteAllText("data\\node.json", JsonConvert.SerializeObject(node, new JsonSerializerSettings()
             //{
             //    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             //}));
+            //var tables = converter.Convert(node);
+            //File.WriteAllText("data\\tables.json", JsonConvert.SerializeObject(tables));
 
+            //return;
+            //Console.WriteLine();
+
+            //var firstGraph = testGraphConverter.Test();
+            //var secondGraph = testGraphConverter.Test(GetNode("https://www.sparheld.de/gutscheine/levis"));
+            //ar testData = firstGraph.Vertices.Where(x => x.Selector == "div.voucherCard.box.voucherCard--default");
+            //var unical = secondGraph.Vertices.Where(x => firstGraph.Vertices.All(a => !a.Equals(x))).Select(x => x.ParentNode).Distinct().ToList().GroupBy(x => x.Selector);
+            #endregion
 
             var server = new WebServer().WithCors().WithWebApi("/", x => x.WithController<TableResource>());
             await server.RunAsync();
@@ -53,19 +54,11 @@
             while (true) await Task.Delay(1000);
         }
 
-        private static Node GetNode(string url)
+        private static ITree<BaseNode> GetNode(string url)
         {
             ScrapingService scrapingService = new ScrapingService();
-
-            var mapper = new DomMapper();
             var doc = scrapingService.LoadPage(url);
-            var documentMap = mapper.ParseDocumentMap(doc);
-
-            File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap));
-            var target = documentMap.Children.ElementAt(1).Children
-                .Where(x => x.Item.Selector == "div.pageContent");
-            var data = new Scraper().ScrapNode(documentMap);
-            return data;
+            return new Scraper().ScrapNode(new DomMapper().ParseDocumentMap(doc));
         }
     }
 
@@ -73,25 +66,15 @@
     {
         private readonly ScrapingService scrapingService = new ScrapingService();
 
-        [Route(HttpVerbs.Any, "/tables")]
-        public IEnumerable<Table> GetTables()
-        {
-            return this.scrapingService.GetTables();
-        }
 
         [Route(HttpVerbs.Post, "/tables/add/")]
-        public IEnumerable<Table> AddLink([QueryField]string link)
-        {
-            this.scrapingService.ScrapPage(link);
-            return this.GetTables();
-        }
-
+        public IEnumerable<Table> AddLink([QueryField]string link) => this.scrapingService.ScrapPage(link);
 
         [Route(HttpVerbs.Post, "/tables/clear/")]
         public IEnumerable<Table> Clear()
         {
             this.scrapingService.Clear();
-            return this.GetTables();
+            return new List<Table>();
         }
     }
 }

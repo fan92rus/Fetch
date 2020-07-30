@@ -21,59 +21,52 @@
 
     class DomMapper
     {
-        public ITree<MapperNode> ParseDocumentMap(IHtmlDocument doc)
+        public ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc)
         {
             var head = doc.QuerySelector("head");
             var body = doc.QuerySelector("body");
-            var root = new MapperNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = Type.Container };
+            var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = Type.Container };
 
-            var finalNode = new Tree<MapperNode>(root);
+            var finalNode = new Tree<InfoNode>(root);
 
             finalNode.Add(this.ParseElementMap(head));
             finalNode.Add(this.ParseElementMap(body));
 
 
+            this.DefineTypes(finalNode);
             return finalNode;
         }
 
-        public void DefineTypes(InfoNode infoNode)
+        public void DefineTypes(ITree<InfoNode> infoNode)
         {
-            if (infoNode.Nodes.Any())
+            if (infoNode.Children.Any())
             {
-                infoNode.Type = Type.Container;
+                infoNode.Item.Type = Type.Container;
 
-                foreach (var subNode in infoNode.Nodes)
+                foreach (var subNode in infoNode.Children)
                     this.DefineTypes(subNode);
             }
             else
             {
-                var element = infoNode.Element;
+                var element = infoNode.Item.Element;
                 var urlExpr =
                     "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
 
                 if (element is IHtmlImageElement)
-                {
-                    infoNode.Type = Type.Image;
-                }
+                    infoNode.Item.Type = Type.Image;
                 else if (element is IHtmlAnchorElement || element.Attributes.Any(a => Regex.IsMatch(a.Value, urlExpr)))
-                {
-                    infoNode.Type = Type.Link;
-                }
+                    infoNode.Item.Type = Type.Link;
                 else if (element is IHtmlButtonElement)
-                {
-                    infoNode.Type = Type.Button;
-                }
+                    infoNode.Item.Type = Type.Button;
                 else
-                {
-                    infoNode.Type = Type.Text;
-                }
+                    infoNode.Item.Type = Type.Text;
             }
         }
 
-        public ITree<MapperNode> ParseElementMap(IElement element, ITree<MapperNode> parent = null)
+        public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent = null)
         {
-            var node = new MapperNode
+            var node = new InfoNode
             {
                 Element = element,
                 Selector = element.ParentElement != null
@@ -81,7 +74,7 @@
                                               : element.GetSelector(),
             };
 
-            var tree = new Tree<MapperNode>(node, parent);
+            var tree = new Tree<InfoNode>(node, parent);
 
             if (!element.Children.Any())
             {
@@ -102,8 +95,6 @@
                         if (parsed == null)
                             return;
 
-                        bool moved = false;
-
                         foreach (var item in parsed.Children.ToList())
                         {
                             var count = element.QuerySelectorAll(item.Item?.Selector).Length;
@@ -116,8 +107,6 @@
                                 }
                                 else
                                 {
-                                    moved = true;
-
                                     var containerSelector = child.GetContainer().GetSelector();
 
                                     if (item?.Item == null) continue;
@@ -148,25 +137,6 @@
                             Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
                         }
                     });
-
-            //var nodes = node.Nodes.DistinctBy(x => x.Selector + "_" + string.Join("_", x.Nodes.Select(e => e.Selector)))/*.ToList();//*/.GroupBy(x => x.Selector);
-
-            //node.Nodes = new List<MapperNode>();
-
-            //foreach (var group in nodes)
-            //{
-            //    var el = group.First();
-
-            //    foreach (var ge in group.SelectMany(g => g.Nodes))
-            //    {
-            //        if (el.Nodes.All(x => x.Selector != ge.Selector))
-            //        {
-            //            el.Nodes.Add(ge);
-            //        }
-            //    }
-
-            //    node.Nodes.Add(el);
-            //}
 
             return tree;
         }
