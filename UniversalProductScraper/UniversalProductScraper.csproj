@@ -10,6 +10,7 @@
     <PackageReference Include="AngleSharp.ContentExtraction" Version="0.0.2" />
     <PackageReference Include="AngleSharp.Io" Version="0.14.0" />
     <PackageReference Include="AngleSharp.Js" Version="0.14.0" />
+    <PackageReference Include="Boilerpipe.Net" Version="1.2.0" />
     <PackageReference Include="EmbedIO" Version="3.4.3" />
     <PackageReference Include="Graphviz" Version="2.38.0.2">
       <PrivateAssets>all</PrivateAssets>

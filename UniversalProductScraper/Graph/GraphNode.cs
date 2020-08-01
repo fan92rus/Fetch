@@ -22,6 +22,8 @@ namespace UniversalProductScraper.Graph
         T Item { get; }
         ICollection<ITree<T>> Children { get; }
         IEnumerable<T> GetCollection();
+
+        [JsonIgnore]
         ITree<T> Parent { get; set; }
         bool Contains(T item);
         void Add(ITree<T> item);
@@ -43,7 +45,7 @@ namespace UniversalProductScraper.Graph
 
         public bool Remove(T item)
         {
-            var isRemoved = item == this.Item && this.Parent != null && this.Parent.Remove(this);
+            var isRemoved = item == this.Item && this.Parent != null && this.Parent.Remove((ITree<T>)this);
             if (isRemoved) return true;
 
             var target = this.Children.FirstOrDefault(x => x.Item == item);
@@ -67,7 +69,7 @@ namespace UniversalProductScraper.Graph
         public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
         public bool Contains(Func<T, bool> item) => this.Item.Equals(item) || this.Children.Any(x => item.Invoke(x.Item));
         public bool Contains(T item) => this.Item == item || this.Children.Any(x => x.Contains(item));
-        public bool Contains(ITree<T> item) => this.Children.Any(x => x == item);
+        public bool Contains(ITree<T> item) => this.Children.Any(x => x.Equals(item));
 
         public IEnumerable<T> GetCollection()
         {
@@ -78,11 +80,8 @@ namespace UniversalProductScraper.Graph
             return list;
         }
 
-        protected bool Equals(Tree<T> other)
-        {
-            return EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
-        }
-
+        public static implicit operator T(Tree<T> tree) => tree.Item;
+        protected bool Equals(Tree<T> other) => EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
         public bool Equals(T obj)
         {
             if (ReferenceEquals(null, obj)) return false;

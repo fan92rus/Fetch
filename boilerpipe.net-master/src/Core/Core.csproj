@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B5E98F6F-FB04-4E91-A965-5C62AC2041AA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Boilerpipe.Net</RootNamespace>
+    <AssemblyName>Boilerpipe.Net</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <BuildPackage>true</BuildPackage>
+    <DocumentationFile>bin\Release\Boilerpipe.Net.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sax.Net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Sax.Net.2.0.2\lib\net45\Sax.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BoilerpipeProcessingException.cs" />
+    <Compile Include="Sax\IContentHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="IBoilerpipeDocumentSource.cs" />
+    <Compile Include="IBoilerpipeExtractor.cs" />
+    <Compile Include="IBoilerpipeFilter.cs" />
+    <Compile Include="Conditions\ITextBlockCondition.cs" />
+    <Compile Include="Document\TextBlock.cs" />
+    <Compile Include="Document\TextDocument.cs" />
+    <Compile Include="Document\TextDocumentStatistics.cs" />
+    <Compile Include="Estimators\SimpleEstimator.cs" />
+    <Compile Include="Extractors\ArticleExtractor.cs" />
+    <Compile Include="Extractors\ArticleSentencesExtractor.cs" />
+    <Compile Include="Extractors\CanolaExtractor.cs" />
+    <Compile Include="Extractors\CommonExtractors.cs" />
+    <Compile Include="Extractors\DefaultExtractor.cs" />
+    <Compile Include="Extractors\BaseExtractor.cs" />
+    <Compile Include="Extractors\KeepEverythingExtractor.cs" />
+    <Compile Include="Extractors\KeepEverythingWithMinKWordsExtractor.cs" />
+    <Compile Include="Extractors\LargestContentExtractor.cs" />
+    <Compile Include="Extractors\NumWordsRulesExtractor.cs" />
+    <Compile Include="Filters\English\DensityRulesClassifier.cs" />
+    <Compile Include="Filters\English\HeuristicFilterBase.cs" />
+    <Compile Include="Filters\English\IgnoreBlocksAfterContentFilter.cs" />
+    <Compile Include="Filters\English\IgnoreBlocksAfterContentFromEndFilter.cs" />
+    <Compile Include="Filters\English\KeepLargestFulltextBlockFilter.cs" />
+    <Compile Include="Filters\English\MinFulltextWordsFilter.cs" />
+    <Compile Include="Filters\English\NumWordsRulesClassifier.cs" />
+    <Compile Include="Filters\English\TerminatingBlocksFinder.cs" />
+    <Compile Include="Filters\Heuristics\AddPrecedingLabelsFilter.cs" />
+    <Compile Include="Filters\Heuristics\ArticleMetadataFilter.cs" />
+    <Compile Include="Filters\Heuristics\BlockProximityFusion.cs" />
+    <Compile Include="Filters\Heuristics\ContentFusion.cs" />
+    <Compile Include="Filters\Heuristics\DocumentTitleMatchClassifier.cs" />
+    <Compile Include="Filters\Heuristics\ExpandTitleToContentFilter.cs" />
+    <Compile Include="Filters\Heuristics\KeepLargestBlockFilter.cs" />
+    <Compile Include="Filters\Heuristics\LabelFusion.cs" />
+    <Compile Include="Filters\Heuristics\SimpleBlockFusionProcessor.cs" />
+    <Compile Include="Filters\Simple\BoilerplateBlockFilter.cs" />
+    <Compile Include="Filters\Simple\InvertedFilter.cs" />
+    <Compile Include="Filters\Simple\LabelToBoilerplateFilter.cs" />
+    <Compile Include="Filters\Simple\LabelToContentFilter.cs" />
+    <Compile Include="Filters\Simple\MarkEverythingContentFilter.cs" />
+    <Compile Include="Filters\Simple\MinClauseWordsFilter.cs" />
+    <Compile Include="Filters\Simple\MinWordsFilter.cs" />
+    <Compile Include="Filters\Simple\SplitParagraphBlocksFilter.cs" />
+    <Compile Include="Filters\Simple\SurroundingToContentFilter.cs" />
+    <Compile Include="Labels\ConditionalLabelAction.cs" />
+    <Compile Include="Labels\DefaultLabels.cs" />
+    <Compile Include="Labels\LabelAction.cs" />
+    <Compile Include="Sax\BoilerpipeHtmlContentHandler.cs" />
+    <Compile Include="Sax\BoilerpipeHtmlParser.cs" />
+    <Compile Include="Sax\CommonTagActions.cs" />
+    <Compile Include="Sax\DefaultTagActionDictionary.cs" />
+    <Compile Include="Sax\HtmlAgilityPackParser.cs" />
+    <Compile Include="Sax\TagAction.cs" />
+    <Compile Include="Sax\TagActionDictionary.cs" />
+    <Compile Include="Util\UnicodeTokenizer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Core.nuspec" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Sax\BoilerpipeSAXInput.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BoilerpipeInput.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

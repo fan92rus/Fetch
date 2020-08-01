@@ -39,7 +39,7 @@
 
         public void DefineTypes(ITree<InfoNode> infoNode)
         {
-            if (infoNode.Children.Any())
+            if ((bool)infoNode?.Children?.Any())
             {
                 infoNode.Item.Type = Type.Container;
 
@@ -74,6 +74,7 @@
                                               : element.GetSelector(),
             };
 
+
             var tree = new Tree<InfoNode>(node, parent);
 
             if (!element.Children.Any())
@@ -95,11 +96,17 @@
                         if (parsed == null)
                             return;
 
-                        foreach (var item in parsed.Children.ToList())
+                        var enumerator = parsed.Children.GetEnumerator();
+                        while (true)
                         {
+                            var moved = enumerator.MoveNext();
+                            if (!moved)
+                                break;
+
+                            var item = enumerator.Current;
                             var count = element.QuerySelectorAll(item.Item?.Selector).Length;
 
-                            if (count == 1)
+                            if (count == 1 || item.Children.Count == 1)
                             {
                                 if (item.Item?.Element?.TextContent?.RemoveSpaces() == parsed?.Item?.Element.TextContent?.RemoveSpaces())
                                 {
@@ -115,13 +122,19 @@
 
                                     var isRemoved = parsed.Remove(item);
 
-                                    tree.Add(item);
+                                    lock (locker)
+                                    {
+                                        if (!tree.Contains(item))
+                                            tree.Add(item);
+                                    }
                                 }
                             }
                             else
                             {
                                 break;
                             }
+
+                            enumerator = parsed.Children.GetEnumerator();
                         }
 
                         var isOk = parsed.Item != null && ((parsed?.Item?.Element?.TextContent != null)
@@ -131,9 +144,8 @@
 
                         lock (locker)
                         {
-                            if (isOk)
+                            if (isOk && !tree.Contains(parsed))
                                 tree.Add(parsed);
-
                             Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
                         }
                     });

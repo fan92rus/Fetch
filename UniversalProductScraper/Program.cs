@@ -16,6 +16,7 @@
     using EmbedIO.WebApi;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     using QuickGraph;
     using QuickGraph.Algorithms;
@@ -58,7 +59,9 @@
         {
             ScrapingService scrapingService = new ScrapingService();
             var doc = scrapingService.LoadPage(url);
-            return new Scraper().ScrapNode(new DomMapper().ParseDocumentMap(doc));
+            var data = new Scraper().ScrapNode(new DomMapper().ParseDocumentMap(doc));
+            var text = JsonConvert.SerializeObject(data);
+            return data;
         }
     }
 
@@ -68,7 +71,12 @@
 
 
         [Route(HttpVerbs.Post, "/tables/add/")]
-        public IEnumerable<Table> AddLink([QueryField]string link) => this.scrapingService.ScrapPage(link);
+        public object AddLink([QueryField]string link)
+        {
+            var tables = this.scrapingService.ScrapPage(link);
+            var res = tables.ToString(Formatting.Indented);
+            return tables.ToObject<dynamic>();
+        }
 
         [Route(HttpVerbs.Post, "/tables/clear/")]
         public IEnumerable<Table> Clear()
