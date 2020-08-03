@@ -29,6 +29,7 @@ namespace UniversalProductScraper.Graph
         bool Contains(ITree<T> item);
         bool Contains(Func<T, bool> func);
         void Add(ITree<T> item);
+        void AddRange(IEnumerable<ITree<T>> items);
         void Add(T item);
         bool Remove(T item);
         bool Remove(ITree<T> item);
@@ -56,6 +57,15 @@ namespace UniversalProductScraper.Graph
         }
 
         public void Add(ITree<T> item) => this.Children?.Add(item);
+
+        public void AddRange(IEnumerable<ITree<T>> items)
+        {
+            foreach (var item in items)
+            {
+                this.Add(item);
+            }
+        }
+
         public void Add(T item) => this.Children?.Add(new Tree<T>(item, this));
 
         public bool Remove(T item)

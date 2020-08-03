@@ -25,6 +25,15 @@
             this.Element = node.Element;
         }
 
+        public InfoNode(IElement element)
+        {
+            this.Element = element;
+            this.Selector = element.ParentElement != null
+                           ? element.GetSelector((element.ParentElement).GetSelector())
+                           : element.GetSelector();
+        }
+
+
         [JsonIgnore]
         public IElement Element { get; set; }
         public string Selector { get; set; }

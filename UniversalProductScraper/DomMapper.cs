@@ -3,6 +3,8 @@
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
@@ -23,17 +25,12 @@
     {
         public ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc)
         {
-            var head = doc.QuerySelector("head");
-            var body = doc.QuerySelector("body");
             var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = Type.Container };
 
-            var finalNode = new Tree<InfoNode>(root);
-
-            finalNode.Add(this.ParseElementMap(head));
-            finalNode.Add(this.ParseElementMap(body));
-
+            var finalNode = new Tree<InfoNode>(root) { this.ParseElementMap(doc.QuerySelector("head")), this.ParseElementMap(doc.QuerySelector("body")) };
 
             this.DefineTypes(finalNode);
+
             return finalNode;
         }
 
@@ -61,102 +58,66 @@
                     infoNode.Item.Type = Type.Text;
             }
         }
-        ITree<InfoNode> BaseTree;
-        public ITree<InfoNode> ParseElementMap(IElement element)
-        {
-            this.BaseTree = new Tree<InfoNode>();
-            return this.ParseElementMap(element, this.BaseTree);
-        }
+
+        public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
+
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
-            var node = new InfoNode
+            var baseTree = new Tree<InfoNode>(new InfoNode(element), parent);
+            baseTree.AddRange(this.ParseChildren(element, baseTree));
+            return baseTree;
+        }
+
+        private IEnumerable<ITree<InfoNode>> ParseChildren(IParentNode element, ITree<InfoNode> baseTree) =>
+            element.Children.Select(x => this.ParseElementMap(x, baseTree))
+                    .Where(parsedMap => parsedMap != null && this.ValidateNode(parsedMap, baseTree))
+                    .Select(x => this.MoveItems(x, element));
+
+        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode)
+        {
+            if (baseNode.Contains(x => x.Selector == node.Item.Selector))
+                return false;
+
+            if (node.Children.Any())
+                return true;
+            if (node.Item?.Element?.Attributes?.Any(p => p?.Name != "class") ?? false)
+                return true;
+            if (node?.Item?.Type == Type.Link)
+                return true;
+
+            return false;
+        }
+
+        [SuppressMessage("ReSharper", "GenericEnumeratorNotDisposed")]
+        private ITree<InfoNode> MoveItems(ITree<InfoNode> parsedMap, IParentNode element)
+        {
+            var enumerator = parsedMap.Children.GetEnumerator();
+
+            var baseTree = parsedMap.Parent;
+
+            while (enumerator.MoveNext())
             {
-                Element = element,
-                Selector = element.ParentElement != null
-                                              ? element.GetSelector((element.ParentElement).GetSelector())
-                                              : element.GetSelector(),
-            };
+                var tree = enumerator.Current;
 
+                var count = element.QuerySelectorAll(tree?.Item?.Selector).Length;
 
-            var tree = new Tree<InfoNode>(node, parent);
+                //Если выполняеться условие то поднимаем элемент на уровень выше (проверка что он один)
+                if (tree?.Item != null && (count == 1 || tree?.Children?.Count == 1))
+                {
+                    parsedMap.Remove(tree);
 
-            if (!element.Children.Any())
-            {
-                var isOk = element.IsText() || element.Attributes.Any(p => p.Name != "class");
+                    if (!baseTree.Contains(tree))
+                        baseTree.Add(tree);
+                }
+                else
+                {
+                    break;
+                }
 
-                if (!isOk)
-                    return null;
+                enumerator = parsedMap.Children.GetEnumerator();
             }
 
-            var locker = new object();
-            var i = 0;
-
-            foreach (var child in element.Children)
-            {
-                var parsed = this.ParseElementMap(child, tree);
-
-                if (parsed == null)
-                    continue;
-
-                var enumerator = parsed.Children.GetEnumerator();
-                while (true)
-                {
-                    var moved = enumerator.MoveNext();
-                    if (!moved)
-                        break;
-
-                    var item = enumerator.Current;
-
-                    var count = element.QuerySelectorAll(item.Item?.Selector).Length;
-
-                    if (count == 1 || item.Children.Count == 1)
-                    {
-                        if (item.Item?.Element?.TextContent?.RemoveSpaces() == parsed?.Item?.Element.TextContent?.RemoveSpaces())
-                        {
-                            var isRemoved = parsed.Remove(item);
-                        }
-                        else
-                        {
-                            var containerSelector = child.GetContainer().GetSelector();
-
-                            if (item?.Item == null) continue;
-
-                            item.Item.Selector = item.Item.Element.GetSelector(containerSelector);
-
-                            var isRemoved = parsed.Remove(item);
-
-                            lock (locker)
-                            {
-                                if (!(parent?.Contains(item) ?? false))
-                                    tree.Add(item);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                    enumerator = parsed.Children.GetEnumerator();
-                }
-
-                var isOk = parsed.Item != null && ((parsed?.Item?.Element?.TextContent != null)
-                                                   || parsed.Children.Any()
-                                                   || parsed.Item?.Element?.Attributes != null && (bool)parsed.Item?.Element?.Attributes?.Any(p => p?.Name != "class")
-                                                   || parsed?.Item?.Type == Type.Link);
-
-                if (parsed?.Item?.Selector.Contains("li.literal__item") ?? false)
-                {
-
-                }
-                if (isOk && !(parent?.Contains(parsed) ?? false) && !tree.Contains(x => x.Selector == parsed.Item.Selector))
-                {
-                    Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
-                    tree.Add(parsed);
-                }
-            }
-
-            return tree;
+            return parsedMap;
         }
     }
 }

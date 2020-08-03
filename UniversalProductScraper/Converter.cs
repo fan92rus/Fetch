@@ -29,12 +29,12 @@
 
             foreach (var group in targetEls.GroupBy(x => x.Key))
             {
-                IEnumerable<ExpandoObject> array = @group.Select(element => element.Tree.Item.GetProperties().ToExpandoObject()).ToList();
+                var objects = @group.Select(element => element.Tree.Item.GetProperties().ToExpandoObject()).ToList();
 
-                if (array.Count() > 1)
-                    target[@group.Key.ToString()] = array;
-                else if (array.Any(x => x.Any()))
-                    target[@group.Key.ToString()] = array.FirstOrDefault();
+                if (objects.Count() > 1)
+                    target[@group.Key.ToString()] = objects;
+                else if (objects.Any(x => x.Any()))
+                    target[@group.Key.ToString()] = objects.FirstOrDefault();
             }
 
             return target;
@@ -50,12 +50,12 @@
             {
                 var key = $"{group.FirstOrDefault()?.Parent?.Item?.Selector ?? ""}_{@group.Key}";
 
-                var converted = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
+                var objects = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
 
-                if (converted.Count() == 1)
-                    target[key] = converted.FirstOrDefault();
+                if (objects.Count() == 1)
+                    target[key] = objects.FirstOrDefault();
                 else
-                    target[key] = converted;
+                    target[key] = objects;
             }
 
             return target;
