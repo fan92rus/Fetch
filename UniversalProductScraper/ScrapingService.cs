@@ -29,6 +29,26 @@
 
     using UniversalProductScraper.Graph;
 
+    public class SortedBaseNodeTree
+    {
+        public SortedBaseNodeTree(ITree<BaseNode> tree, Dictionary<string, string> properties)
+        {
+            this.Properties = properties;
+            this.Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, this.Properties);
+            this.Tree = tree;
+        }
+
+        public SortedBaseNodeTree(ITree<BaseNode> tree)
+        {
+            this.Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, tree?.Item?.GetProperties());
+            this.Tree = tree;
+        }
+        public Dictionary<string, string> Properties { get; set; }
+        public ITree<BaseNode> Tree { get; set; }
+        public TableKey Key { get; set; }
+        public static IEnumerable<SortedBaseNodeTree> TreeMarkup(IEnumerable<ITree<BaseNode>> voidChildren) => voidChildren.Select(x => new SortedBaseNodeTree(x, x.Item.GetProperties()));
+
+    }
     class ScrapingService
     {
         private TreeConverter converter = new TreeConverter();
@@ -60,27 +80,18 @@
             File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
             var data = new Scraper().ScrapNode(documentMap);
 
-            this.Trees = data.Select(
-                x => new SortedBaseNodeTree()
-                {
-                    Tree = x,
-                    Key = TableKey.Create(x?.Parent?.Item?.Selector, x?.Item?.Selector, x?.Item?.GetProperties()),
-                });
+            this.Trees = data.Select(x => new SortedBaseNodeTree(x));
 
             this.PreProcessingScrapedData();
 
             var text = CommonExtractors.ArticleExtractor.GetText(page);
             var objects = this.converter.Convert(data);
-            return objects;
+            return (ExpandoObject)objects;
         }
 
         public IEnumerable<SortedBaseNodeTree> Trees { get; set; }
 
-        public class SortedBaseNodeTree
-        {
-            public ITree<BaseNode> Tree { get; set; }
-            public TableKey Key { get; set; }
-        }
+
 
         public void PreProcessingScrapedData()
         {

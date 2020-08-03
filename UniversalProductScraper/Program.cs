@@ -88,12 +88,5 @@
                 return null;
             }
         }
-
-        [Route(HttpVerbs.Post, "/tables/clear/")]
-        public IEnumerable<Table> Clear()
-        {
-            this.scrapingService.Clear();
-            return new List<Table>();
-        }
     }
 }
