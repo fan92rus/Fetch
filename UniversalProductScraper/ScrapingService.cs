@@ -139,7 +139,7 @@
                 throw new ArgumentException("uri is invalid");
             var rc = new RestClient();
             var req = new RestRequest(target);
-            req.AddHeader("Content-Type", "text/html; charset=utf-8");
+            req.AddHeader("Content-InfoNodeType", "text/html; charset=utf-8");
             var resp = rc.ExecuteWitHeaders(req, this.Policy);
             return resp;
         }

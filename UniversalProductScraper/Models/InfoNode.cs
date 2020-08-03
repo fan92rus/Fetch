@@ -8,8 +8,15 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    using Type = UniversalProductScraper.Type;
-
+    public enum InfoNodeType
+    {
+        Default,
+        Link,
+        Text,
+        Image,
+        Container,
+        Button
+    }
 
     class InfoNode : IEquatable<InfoNode>
     {
@@ -21,7 +28,7 @@
         public InfoNode(InfoNode node)
         {
             this.Selector = node.Selector;
-            this.Type = node.Type;
+            this.InfoNodeType = node.InfoNodeType;
             this.Element = node.Element;
         }
 
@@ -39,13 +46,13 @@
         public string Selector { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Type Type { get; set; }
+        public InfoNodeType InfoNodeType { get; set; }
 
         public bool Equals(InfoNode other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return string.Equals(this.Selector, other.Selector) && this.Type == other.Type;
+            return string.Equals(this.Selector, other.Selector) && this.InfoNodeType == other.InfoNodeType;
         }
 
         public override bool Equals(object obj)
@@ -60,7 +67,7 @@
         {
             unchecked
             {
-                return ((this.Selector != null ? this.Selector.GetHashCode() : 0) * 397) ^ (int)this.Type;
+                return ((this.Selector != null ? this.Selector.GetHashCode() : 0) * 397) ^ (int)this.InfoNodeType;
             }
         }
     }

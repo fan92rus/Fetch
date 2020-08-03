@@ -25,7 +25,7 @@
 
             foreach (var child in info.Children)
             {
-                if (child.Item.Type == Type.Container)
+                if (child.Item.InfoNodeType == Type.Container)
                 {
                     var childrenAll = info.Item.Element.QuerySelectorAll(child.Item.Selector);
 
@@ -82,7 +82,7 @@
                 Selector = child.Selector,
                 Attributes = element.Attributes.Where(x => x.Name != "class").Where(x => x.Name != "d" && !string.IsNullOrEmpty(x.Name))
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
-                Type = child.Type,
+                Type = child.InfoNodeType,
             };
             Console.WriteLine("SCRAP  - " + n.Selector);
             var flags = (int)child.Element.Flags;

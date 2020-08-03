@@ -4,28 +4,22 @@
     using AngleSharp.Html.Dom;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
 
-    public enum Type
-    {
-        Default,
-        Link,
-        Text,
-        Image,
-        Container,
-        Button
-    }
-
     class DomMapper
     {
+        public List<Func<ITree<InfoNode>, bool>> CheckRules = new List<Func<ITree<InfoNode>, bool>>()
+                                                           {
+                                                               x=>x.Children.Any(),
+                                                               x=>x.Item.Element.Attributes.Any(e => e.Name!="class" && e.Name!="id"),
+                                                               x=>x.Item.InfoNodeType == InfoNodeType.Link
+                                                           };
         public ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc)
         {
-            var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = Type.Container };
+            var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), InfoNodeType = InfoNodeType.Container };
 
             var finalNode = new Tree<InfoNode>(root) { this.ParseElementMap(doc.QuerySelector("head")), this.ParseElementMap(doc.QuerySelector("body")) };
 
@@ -38,7 +32,7 @@
         {
             if (infoNode?.Children?.Any() ?? false)
             {
-                infoNode.Item.Type = Type.Container;
+                infoNode.Item.InfoNodeType = InfoNodeType.Container;
 
                 foreach (var subNode in infoNode.Children)
                     this.DefineTypes(subNode);
@@ -49,13 +43,13 @@
                 var urlExpr = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
                 if (element is IHtmlImageElement)
-                    infoNode.Item.Type = Type.Image;
+                    infoNode.Item.InfoNodeType = InfoNodeType.Image;
                 else if (element is IHtmlAnchorElement || element.Attributes.Any(a => Regex.IsMatch(a.Value, urlExpr)))
-                    infoNode.Item.Type = Type.Link;
+                    infoNode.Item.InfoNodeType = InfoNodeType.Link;
                 else if (element is IHtmlButtonElement)
-                    infoNode.Item.Type = Type.Button;
+                    infoNode.Item.InfoNodeType = InfoNodeType.Button;
                 else
-                    infoNode.Item.Type = Type.Text;
+                    infoNode.Item.InfoNodeType = InfoNodeType.Text;
             }
         }
 
@@ -73,22 +67,8 @@
                     .Where(parsedMap => parsedMap != null && this.ValidateNode(parsedMap, baseTree))
                     .Select(x => this.MoveItems(x, element));
 
-        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode)
-        {
-            if (baseNode.Contains(x => x.Selector == node.Item.Selector))
-                return false;
+        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => !baseNode.Contains(x => x.Selector == node.Item.Selector) && this.CheckRules.Any(x => x.Invoke(node));
 
-            if (node.Children.Any())
-                return true;
-            if (node.Item?.Element?.Attributes?.Any(p => p?.Name != "class") ?? false)
-                return true;
-            if (node?.Item?.Type == Type.Link)
-                return true;
-
-            return false;
-        }
-
-        [SuppressMessage("ReSharper", "GenericEnumeratorNotDisposed")]
         private ITree<InfoNode> MoveItems(ITree<InfoNode> parsedMap, IParentNode element)
         {
             var enumerator = parsedMap.Children.GetEnumerator();
