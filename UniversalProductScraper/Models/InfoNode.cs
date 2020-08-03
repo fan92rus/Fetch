@@ -13,6 +13,18 @@
 
     class InfoNode : IEquatable<InfoNode>
     {
+        public InfoNode()
+        {
+
+        }
+
+        public InfoNode(InfoNode node)
+        {
+            this.Selector = node.Selector;
+            this.Type = node.Type;
+            this.Element = node.Element;
+        }
+
         [JsonIgnore]
         public IElement Element { get; set; }
         public string Selector { get; set; }

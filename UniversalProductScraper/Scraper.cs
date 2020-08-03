@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
 
@@ -29,9 +31,15 @@
 
                     foreach (var c in childrenAll)
                     {
-                        child.Item.Element = c;
-                        var element = this.ScrapNode(child);
-                        if (element != null && (element.Children?.Any() ?? false || (element.Item?.Attributes?.Any() ?? false)))
+                        var element = this.ScrapNode(new Tree<InfoNode>(child)
+                        {
+                            Item = new InfoNode(child.Item)
+                            {
+                                Element = c,
+                            },
+                        });
+
+                        if (element != null && !tree.Contains(element) && (element.Children?.Any() ?? false || (element.Item?.Attributes?.Any() ?? false)))
                             tree.Add(element);
                     }
 
@@ -43,10 +51,11 @@
                 foreach (var element in children)
                 {
                     var el = this.SetNode(child.Item, element);
-                    if (el?.Text != null || (el?.Attributes?.Any() ?? false))
+                    if (el?.Text != null || (el?.Attributes?.Any() ?? false) && tree.Children.All(e => e.Item.Selector != el.Selector))
                         tree.Add(el);
                 }
             }
+
             if (tree.Item?.Text != null || (tree?.Item?.Attributes?.Any() ?? false) || (tree?.Children?.Any() ?? false))
                 return tree;
 
@@ -75,14 +84,14 @@
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
                 Type = child.Type,
             };
-
+            Console.WriteLine("SCRAP  - " + n.Selector);
             var flags = (int)child.Element.Flags;
 
             //if (this.CheckFlags(flags))
             {
-                //var count = element.ChildNodes.Count(this.CheckTextElements());
+                //var count = Tree.ChildNodes.Count(this.CheckTextElements());
 
-                //var textElements = element.ChildNodes?.Where(this.CheckTextElements());
+                //var textElements = Tree.ChildNodes?.Where(this.CheckTextElements());
 
                 //var text = string.Join(" ", textElements?.Select(x => x.TextContent)).RemoveSpaces();
                 //float index = (float)text.Length / child.Element.TextContent.Length;                

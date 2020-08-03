@@ -2,7 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.Linq;
+    using System.Threading.Tasks;
+
     using MoreLinq;
 
     using Newtonsoft.Json.Linq;
@@ -12,10 +15,10 @@
     class TreeConverter
     {
 
-        public JObject Convert(ITree<BaseNode> tree) => this.ConvertNode(tree);
-        private JObject ConvertNode(ITree<BaseNode> tree)
+        public ExpandoObject Convert(ITree<BaseNode> tree) => this.ConvertNode(tree);
+        private ExpandoObject ConvertNode(ITree<BaseNode> tree)
         {
-            var target = new JObject();
+            var target = new ExpandoObject();
 
             var subElements = tree.Children.Where(x => (x?.Children?.Any() ?? false)).ToList();
             var voidChildren = tree.Children.Where(x => !(x?.Children?.Any() ?? false)).ToList();
@@ -27,23 +30,24 @@
                     if (group.Count() == 1)
                     {
                         var @object = this.ConvertNode(group.FirstOrDefault());
-                        
+
                         var name = $"{tree.Item.Selector}_{group.Key}";
-                        target.Add(name, @object);
+                        ((IDictionary<string, object>)target)[name] = @object;
                     }
                     else
                     {
-                        var array = new JArray();
+                        var array = new List<object>();
 
-                        foreach (var ob in group)
-                        {
-                            var @object = this.ConvertNode(ob);
-                            if (@object.HasValues)
-                                array.Add(@object);
-                        }
+                        Parallel.ForEach(group,
+                            (x) =>
+                                {
+                                    var @object = this.ConvertNode(x);
+                                    if ((bool)(@object as IDictionary<string, object>)?.Values?.Any())
+                                        array.Add(@object);
+                                });
 
                         var name = $"{tree.Item.Selector}_{group.Key}";
-                        target.Add(name, array);
+                        ((IDictionary<string, object>)target)[name] = array;
                     }
 
                 }
@@ -51,17 +55,18 @@
 
             if (!voidChildren.Any()) return target;
 
-            var targetEls = voidChildren.Select(
+            var targetEls = voidChildren.AsParallel().Select(
                 x =>
                     {
-                        var properties = this.GetProperty(x.Item);
+                        var properties = x.Item.GetProperties();
+
                         return new
                         {
                             Properties = properties,
                             Node = x,
                             Key = TableKey.Create(tree.Item.Selector, x.Item.Selector, properties)
                         };
-                    }).GroupBy(x => x.Key);
+                    }).ToList().GroupBy(x => x.Key);
 
             foreach (var group in targetEls)
             {
@@ -76,12 +81,12 @@
                         objects.Add(obj);
                     }
                     if (objects.HasValues)
-                        target.Add(group.Key.ToString(), objects);
+                        ((IDictionary<string, object>)target)[group.Key.ToString()] = objects;
                 }
                 else
                 {
                     if (converted.Any(x => x.HasValues))
-                        target.Add(group.Key.ToString(), converted.FirstOrDefault());
+                        ((IDictionary<string, object>)target)[group.Key.ToString()] = converted.FirstOrDefault();
                 }
             }
 
@@ -96,26 +101,7 @@
             }
         }
 
-        string Clear(string @base)
-        {
-            return @base.Replace("-", "_").Replace(".", "_").Replace("[", "").Replace("]", "");
-        }
-        private Dictionary<string, string> GetProperty(BaseNode gNode)
-        {
-            Dictionary<string, string> dList = new Dictionary<string, string>();
-
-            foreach (var el in gNode.Attributes)
-            {
-                var key = this.Clear(el.Key);
-                if (!dList.ContainsKey(key) && !string.IsNullOrWhiteSpace(el.Value))
-                    dList.Add(key, el.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(gNode.Text))
-                dList.Add(this.Clear(gNode.Selector), gNode.Text);
-
-            return dList;
-        }
+        private Dictionary<string, string> GetProperty(BaseNode gNode) => gNode.GetProperties();
     }
 
     #region OldConverter

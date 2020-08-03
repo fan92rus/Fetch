@@ -5,8 +5,7 @@
     <button @click="addPage({params:{link}})">add page</button>
 
     <input v-model="link" />
-    {{tables}}
-    <vue-json-to-table :data="{}"></vue-json-to-table>
+    <vue-json-to-table :data="tables"></vue-json-to-table>
   </div>
 </template>
 

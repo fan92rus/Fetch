@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Dynamic;
     using System.IO;
     using System.Linq;
     using System.Net.Http.Headers;
@@ -31,6 +32,7 @@
 
         public static async Task Main(string[] args)
         {
+
             #region unical
             //var node = GetNode("https://www.sparheld.de/gutscheine/discountlens");
             //File.WriteAllText("data\\node.json", JsonConvert.SerializeObject(node, new JsonSerializerSettings()
@@ -71,11 +73,20 @@
 
 
         [Route(HttpVerbs.Post, "/tables/add/")]
-        public object AddLink([QueryField]string link)
+        public string AddLink([QueryField]string link)
         {
-            var tables = this.scrapingService.ScrapPage(link);
-            var res = tables.ToString(Formatting.Indented);
-            return tables.ToObject<dynamic>();
+            try
+            {
+                var tables = this.scrapingService.ScrapPage(link);
+                var res = JsonConvert.SerializeObject(tables, Formatting.Indented);
+                File.WriteAllText("data\\models.json", res);
+                return res;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return null;
+            }
         }
 
         [Route(HttpVerbs.Post, "/tables/clear/")]

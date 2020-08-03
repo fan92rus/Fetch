@@ -16,7 +16,9 @@ const tables = new Vapi({
     action: "addPage",
     path: ({ link }) => `/tables/add/?link=${link}`,
     onSuccess(state, payload, axios, { params, data }) {
-      state.tables = payload.data;
+      let testData = payload.data.replace(/^\"*/, "").replace(/\"*$/, "");
+      console.log(testData);
+      state.tables = JSON.parse(testData);
     },
   })
   .post({

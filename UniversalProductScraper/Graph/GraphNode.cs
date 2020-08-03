@@ -17,15 +17,17 @@ namespace UniversalProductScraper.Graph
     using UniversalProductScraper.Models;
     using Type = UniversalProductScraper.Type;
 
-    public interface ITree<T> : IEquatable<T>
+    public interface ITree<T> : IEquatable<T>, IEnumerable<ITree<T>>
     {
-        T Item { get; }
-        ICollection<ITree<T>> Children { get; }
+        T Item { get; set; }
+        ICollection<ITree<T>> Children { get; set; }
         IEnumerable<T> GetCollection();
 
         [JsonIgnore]
         ITree<T> Parent { get; set; }
         bool Contains(T item);
+        bool Contains(ITree<T> item);
+        bool Contains(Func<T, bool> func);
         void Add(ITree<T> item);
         void Add(T item);
         bool Remove(T item);
@@ -37,11 +39,24 @@ namespace UniversalProductScraper.Graph
     {
         public Tree() => this.Children = new List<ITree<T>>();
         public Tree(T root) : this() => this.Item = root;
-        public Tree(T root, ITree<T> parent) : this(root) => this.Parent = parent;
+        public Tree(T root, ITree<T> parent) : this(root)
+        {
+            if (parent != this)
+            {
+                this.Parent = parent;
+                //this.Parent.Add((ITree<T>)this);
+            }
+        }
 
-        public void Add(ITree<T> item) => (this.Children as List<ITree<T>>)?.Add(item);
+        public Tree(ITree<T> @base)
+        {
+            this.Children = @base.Children;
+            this.Item = @base.Item;
+            this.Parent = @base.Parent;
+        }
 
-        public void Add(T item) => (this.Children as List<ITree<T>>)?.Add(new Tree<T>(item, this));
+        public void Add(ITree<T> item) => this.Children?.Add(item);
+        public void Add(T item) => this.Children?.Add(new Tree<T>(item, this));
 
         public bool Remove(T item)
         {
@@ -63,13 +78,15 @@ namespace UniversalProductScraper.Graph
             return this.Children.Remove(target);
         }
 
-        public T Item { get; }
+        public T Item { get; set; }
         public ITree<T> Parent { get; set; }
-        public ICollection<ITree<T>> Children { get; }
+        public ICollection<ITree<T>> Children { get; set; }
         public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
-        public bool Contains(Func<T, bool> item) => this.Item.Equals(item) || this.Children.Any(x => item.Invoke(x.Item));
-        public bool Contains(T item) => this.Item == item || this.Children.Any(x => x.Contains(item));
-        public bool Contains(ITree<T> item) => this.Children.Any(x => x.Equals(item));
+
+        private bool CheckThis(T item) => this.Item != null && this.Item.Equals(item);
+        public bool Contains(Func<T, bool> func) => (this.Item != null && func.Invoke(this?.Item)) || (this.Children != null && this.Children.Any(x => x.Contains(func)));
+        public bool Contains(T item) => this.CheckThis((T)item) || (this.Children != null && this.Children.Any(x => x.Contains(item)));
+        public bool Contains(ITree<T> item) => this.CheckThis(item.Item) || this.Children.Any(x => x.Contains(item));
 
         public IEnumerable<T> GetCollection()
         {
@@ -90,6 +107,21 @@ namespace UniversalProductScraper.Graph
             return this.Equals(obj);
         }
 
+        public IEnumerator<ITree<T>> GetEnumerator()
+        {
+            yield return this;
+
+            foreach (var child in this.Children)
+            {
+                var enumerator = child.GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    yield return enumerator.Current;
+                }
+            }
+        }
+
         public override int GetHashCode()
         {
             unchecked
@@ -97,8 +129,12 @@ namespace UniversalProductScraper.Graph
                 return (EqualityComparer<T>.Default.GetHashCode(this.Item) * 397) ^ (this.Children != null ? this.Children.GetHashCode() : 0);
             }
         }
-    }
 
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+    }
 
     public class BaseNode : IEquatable<BaseNode>
     {
@@ -106,6 +142,28 @@ namespace UniversalProductScraper.Graph
         public string Selector { get; set; }
         public List<KeyValuePair<string, string>> Attributes { get; set; }
         public string Text { get; set; }
+
+        string Clear(string @base)
+        {
+            return @base.Replace("-", "_").Replace(".", "_").Replace("[", "").Replace("]", "");
+        }
+
+        public Dictionary<string, string> GetProperties()
+        {
+            Dictionary<string, string> dList = new Dictionary<string, string>();
+
+            foreach (var el in this.Attributes)
+            {
+                var key = this.Clear(el.Key);
+                if (!dList.ContainsKey(key) && !string.IsNullOrWhiteSpace(el.Value))
+                    dList.Add(key, el.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.Text))
+                dList.Add(this.Clear(this.Selector), this.Text);
+
+            return dList;
+        }
 
         public bool Equals(BaseNode other)
         {
@@ -134,41 +192,4 @@ namespace UniversalProductScraper.Graph
         }
     }
 
-    class TestGraphConverter
-    {
-        public AdjacencyGraph<Node, TaggedEdge<Node, int>> Test(Node node)
-        {
-            var g = new AdjacencyGraph<Node, TaggedEdge<Node, int>>();
-
-            g.AddVertex(node);
-
-            foreach (var child in node.Nodes)
-                this.ConvertNode(child, g);
-
-            return g;
-        }
-
-        public void ConvertNode(Node node, AdjacencyGraph<Node, TaggedEdge<Node, int>> g)
-        {
-            if (node.Nodes != null)
-            {
-                g.AddVerticesAndEdgeRange(node.Nodes.Select(x => new TaggedEdge<Node, int>(node.ParentNode, x, 0)));
-
-                foreach (var child in node.Nodes)
-                    this.ConvertNode(child, g);
-            }
-            else
-            {
-                try
-                {
-                    g.AddVerticesAndEdge(new TaggedEdge<Node, int>(node.ParentNode, node, 0));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
-
-        }
-    }
 }

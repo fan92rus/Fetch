@@ -39,7 +39,7 @@
 
         public void DefineTypes(ITree<InfoNode> infoNode)
         {
-            if ((bool)infoNode?.Children?.Any())
+            if (infoNode?.Children?.Any() ?? false)
             {
                 infoNode.Item.Type = Type.Container;
 
@@ -48,10 +48,8 @@
             }
             else
             {
-                var element = infoNode.Item.Element;
-                var urlExpr =
-                    "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
-
+                var element = infoNode?.Item?.Element;
+                var urlExpr = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
                 if (element is IHtmlImageElement)
                     infoNode.Item.Type = Type.Image;
@@ -63,8 +61,13 @@
                     infoNode.Item.Type = Type.Text;
             }
         }
-
-        public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent = null)
+        ITree<InfoNode> BaseTree;
+        public ITree<InfoNode> ParseElementMap(IElement element)
+        {
+            this.BaseTree = new Tree<InfoNode>();
+            return this.ParseElementMap(element, this.BaseTree);
+        }
+        public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
             var node = new InfoNode
             {
@@ -88,67 +91,70 @@
             var locker = new object();
             var i = 0;
 
-            Parallel.ForEach(element.Children,
-                child =>
+            foreach (var child in element.Children)
+            {
+                var parsed = this.ParseElementMap(child, tree);
+
+                if (parsed == null)
+                    continue;
+
+                var enumerator = parsed.Children.GetEnumerator();
+                while (true)
+                {
+                    var moved = enumerator.MoveNext();
+                    if (!moved)
+                        break;
+
+                    var item = enumerator.Current;
+
+                    var count = element.QuerySelectorAll(item.Item?.Selector).Length;
+
+                    if (count == 1 || item.Children.Count == 1)
                     {
-                        var parsed = this.ParseElementMap(child, tree);
-
-                        if (parsed == null)
-                            return;
-
-                        var enumerator = parsed.Children.GetEnumerator();
-                        while (true)
+                        if (item.Item?.Element?.TextContent?.RemoveSpaces() == parsed?.Item?.Element.TextContent?.RemoveSpaces())
                         {
-                            var moved = enumerator.MoveNext();
-                            if (!moved)
-                                break;
-
-                            var item = enumerator.Current;
-                            var count = element.QuerySelectorAll(item.Item?.Selector).Length;
-
-                            if (count == 1 || item.Children.Count == 1)
-                            {
-                                if (item.Item?.Element?.TextContent?.RemoveSpaces() == parsed?.Item?.Element.TextContent?.RemoveSpaces())
-                                {
-                                    var isRemoved = parsed.Remove(item);
-                                }
-                                else
-                                {
-                                    var containerSelector = child.GetContainer().GetSelector();
-
-                                    if (item?.Item == null) continue;
-
-                                    item.Item.Selector = item.Item.Element.GetSelector(containerSelector);
-
-                                    var isRemoved = parsed.Remove(item);
-
-                                    lock (locker)
-                                    {
-                                        if (!tree.Contains(item))
-                                            tree.Add(item);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
-
-                            enumerator = parsed.Children.GetEnumerator();
+                            var isRemoved = parsed.Remove(item);
                         }
-
-                        var isOk = parsed.Item != null && ((parsed?.Item?.Element?.TextContent != null)
-                                                           || parsed.Children.Any()
-                                                           || parsed.Item?.Element?.Attributes != null && (bool)parsed.Item?.Element?.Attributes?.Any(p => p?.Name != "class")
-                                                           || parsed?.Item?.Type == Type.Link);
-
-                        lock (locker)
+                        else
                         {
-                            if (isOk && !tree.Contains(parsed))
-                                tree.Add(parsed);
-                            Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
+                            var containerSelector = child.GetContainer().GetSelector();
+
+                            if (item?.Item == null) continue;
+
+                            item.Item.Selector = item.Item.Element.GetSelector(containerSelector);
+
+                            var isRemoved = parsed.Remove(item);
+
+                            lock (locker)
+                            {
+                                if (!(parent?.Contains(item) ?? false))
+                                    tree.Add(item);
+                            }
                         }
-                    });
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    enumerator = parsed.Children.GetEnumerator();
+                }
+
+                var isOk = parsed.Item != null && ((parsed?.Item?.Element?.TextContent != null)
+                                                   || parsed.Children.Any()
+                                                   || parsed.Item?.Element?.Attributes != null && (bool)parsed.Item?.Element?.Attributes?.Any(p => p?.Name != "class")
+                                                   || parsed?.Item?.Type == Type.Link);
+
+                if (parsed?.Item?.Selector.Contains("li.literal__item") ?? false)
+                {
+
+                }
+                if (isOk && !(parent?.Contains(parsed) ?? false) && !tree.Contains(x => x.Selector == parsed.Item.Selector))
+                {
+                    Console.WriteLine($"{parsed?.Item?.Selector} {i++}");
+                    tree.Add(parsed);
+                }
+            }
 
             return tree;
         }
