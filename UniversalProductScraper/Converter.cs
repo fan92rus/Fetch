@@ -36,9 +36,8 @@
             {
                 IEnumerable<ExpandoObject> array = @group.Select(element => element.Tree.Item.GetProperties().ToExpandoObject()).ToList();
 
-                if (group.Count() > 1 && array.Any())
+                if (array.Count() > 1)
                     target[@group.Key.ToString()] = array;
-
                 else if (array.Any(x => x.Any()))
                     target[@group.Key.ToString()] = array.FirstOrDefault();
             }
@@ -56,10 +55,12 @@
             {
                 var key = $"{group.FirstOrDefault()?.Parent?.Item?.Selector ?? ""}_{@group.Key}";
 
-                if (@group.Count() == 1)
-                    target[key] = this.Convert(@group.FirstOrDefault());
+                var converted = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
+
+                if (converted.Count() == 1)
+                    target[key] = converted.FirstOrDefault();
                 else
-                    target[key] = @group.Select(this.Convert).Where(x => x.Values.Any());
+                    target[key] = converted;
             }
 
             return target;
