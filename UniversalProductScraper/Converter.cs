@@ -3,12 +3,7 @@
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
-    using System.Threading.Tasks;
-
-    using MoreLinq;
-
-    using Newtonsoft.Json.Linq;
-
+    using UniversalProductScraper.Extensions;
     using UniversalProductScraper.Graph;
     class TreeConverter
     {
@@ -64,20 +59,6 @@
             }
 
             return target;
-        }
-    }
-
-    public static class ExpandoEx
-    {
-        public static void AddRange(this IDictionary<string, object> target, IDictionary<string, object> elements)
-        {
-            foreach (var element in elements) target.Add(element.Key, element.Value);
-        }
-        public static ExpandoObject ToExpandoObject(this IDictionary<string, string> dictionary)
-        {
-            IDictionary<string, object> target = new ExpandoObject();
-            foreach (var element in dictionary) target.Add(element.Key, element.Value);
-            return (ExpandoObject)target;
         }
     }
 }
