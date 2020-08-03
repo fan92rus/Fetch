@@ -56,10 +56,7 @@ namespace UniversalProductScraper.Graph
 
         public void AddRange(IEnumerable<ITree<T>> items)
         {
-            foreach (var item in items)
-            {
-                this.Add(item);
-            }
+            foreach (var item in items) this.Add(item);
         }
 
         public void Add(T item) => this.Children?.Add(new Tree<T>(item, this));

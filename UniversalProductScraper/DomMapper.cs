@@ -6,6 +6,9 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+
+    using MoreLinq;
+
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
 
@@ -56,12 +59,12 @@
                     infoNode.Item.Type = DomNodeType.Text;
             }
         }
-        public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
 
+        public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
             var baseTree = new Tree<InfoNode>(new InfoNode(element), parent);
-            baseTree.AddRange(this.ParseChildren(element, baseTree));
+            this.ParseChildren(element, baseTree);
             return baseTree;
         }
 
@@ -71,13 +74,18 @@
         /// <param name="element">Контейнер содержащий ноды</param>
         /// <param name="baseTree">Родительское дерево</param>
         /// <returns>Очищенные дочерние ноды</returns>
-        private IEnumerable<ITree<InfoNode>> ParseChildren(IParentNode element, ITree<InfoNode> baseTree) =>
-                //Парсим дочерние ноды
-                element.Children.Select(x => this.ParseElementMap(x, baseTree))
-                //Выкидываем пустые и невалидные ноды
-                .Where(parsedMap => parsedMap != null && this.ValidateNode(parsedMap, baseTree))
-                //Перемещаем одиночные ноды на уровень выше
-                .Select(x => this.MoveItems(x, element));
+        private void ParseChildren(IParentNode element, ITree<InfoNode> baseTree)
+        {
+            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).DistinctBy(x => x.Item);
+            
+            foreach (var child in parsedChildren)
+            {
+                this.MoveItems(child, element, baseTree);
+
+                if (!baseTree.Contains(child))
+                    baseTree.Add(child);
+            }
+        }
 
         /// <summary>
         /// Проверка ноды на валидность
@@ -85,7 +93,8 @@
         /// <param name="node">Нода</param>
         /// <param name="baseNode">Родительская нода</param>
         /// <returns>Валидна ли нода</returns>
-        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => (baseNode == null || !baseNode.Contains(x => x.Selector == node.Item.Selector)) && this.CheckRules.Any(x => x.Invoke(node));
+        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => (baseNode == null || !baseNode.Contains(node)) && this.ValidateNode(node);
+        private bool ValidateNode(ITree<InfoNode> node) => this.CheckRules.Any(x => x.Invoke(node));
 
         /// <summary>
         /// Перемещение одиночных дочерних нод на уровень выше
@@ -93,11 +102,9 @@
         /// <param name="parsedMap">Спаршеная карта документа</param>
         /// <param name="element">Родительский элемент</param>
         /// <returns></returns>
-        private ITree<InfoNode> MoveItems(ITree<InfoNode> parsedMap, IParentNode element)
+        private void MoveItems(ITree<InfoNode> parsedMap, IParentNode element, ITree<InfoNode> baseTree)
         {
             var enumerator = parsedMap.Children.GetEnumerator();
-
-            var baseTree = parsedMap.Parent;
 
             while (enumerator.MoveNext())
             {
@@ -121,7 +128,8 @@
                 enumerator = parsedMap.Children.GetEnumerator();
             }
 
-            return parsedMap;
+            //if (this.ValidateNode(parsedMap))
+            //    baseTree.Add(parsedMap);
         }
     }
 }

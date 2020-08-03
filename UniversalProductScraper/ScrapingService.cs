@@ -79,10 +79,9 @@
             var documentMap = mapper.ParseDocumentMap(doc);
             File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
             var data = new Scraper().ScrapNode(documentMap);
-
             this.Trees = data.Select(x => new SortedBaseNodeTree(x));
-
             this.PreProcessingScrapedData();
+            File.WriteAllText("data\\data.json", JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
             var text = CommonExtractors.ArticleExtractor.GetText(page);
             var objects = this.converter.Convert(data);

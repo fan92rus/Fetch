@@ -61,6 +61,7 @@
 
             return null;
         }
+
         public List<string> TagList = new List<string>()
                                           {
                                               "p",
@@ -102,7 +103,7 @@
                 {
                     if (element is IHtmlScriptElement)
                         n.Text = Regex.Unescape(element.InnerHtml);
-                    else if (this.TagList.Contains(element.LocalName))
+                    else if (this.CheckTextElements(element))
                         n.Text = Regex.Unescape(Regex.Replace(text.Replace("\n", "").Replace("\r", ""), "\\s+", " ").Trim());
                 }
                 catch (Exception e)
@@ -114,7 +115,7 @@
             return n;
         }
 
-        private Func<INode, bool> CheckTextElements() => x => (x.NodeType == NodeType.Text /*|| this.CheckFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces()*/);
+        private bool CheckTextElements(IElement x) => (x.NodeType == NodeType.Text || this.CheckFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces());
 
         private bool CheckFlags(int flag) => flag <= 280 && flag >= 250 || flag >= 306 && flag <= 340 || (flag >= 2304 && flag <= 2340);
     }
