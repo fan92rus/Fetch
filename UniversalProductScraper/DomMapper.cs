@@ -15,11 +15,11 @@
                                                            {
                                                                x=>x.Children.Any(),
                                                                x=>x.Item.Element.Attributes.Any(e => e.Name!="class" && e.Name!="id"),
-                                                               x=>x.Item.InfoNodeType == InfoNodeType.Link
+                                                               x=>x.Item.Type == DomNodeType.Link
                                                            };
         public ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc)
         {
-            var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), InfoNodeType = InfoNodeType.Container };
+            var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = DomNodeType.Container };
 
             var finalNode = new Tree<InfoNode>(root) { this.ParseElementMap(doc.QuerySelector("head")), this.ParseElementMap(doc.QuerySelector("body")) };
 
@@ -28,11 +28,15 @@
             return finalNode;
         }
 
+        /// <summary>
+        /// Типизация дочерних нод
+        /// </summary>
+        /// <param name="infoNode"></param>
         public void DefineTypes(ITree<InfoNode> infoNode)
         {
             if (infoNode?.Children?.Any() ?? false)
             {
-                infoNode.Item.InfoNodeType = InfoNodeType.Container;
+                infoNode.Item.Type = DomNodeType.Container;
 
                 foreach (var subNode in infoNode.Children)
                     this.DefineTypes(subNode);
@@ -43,16 +47,15 @@
                 var urlExpr = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
                 if (element is IHtmlImageElement)
-                    infoNode.Item.InfoNodeType = InfoNodeType.Image;
+                    infoNode.Item.Type = DomNodeType.Image;
                 else if (element is IHtmlAnchorElement || element.Attributes.Any(a => Regex.IsMatch(a.Value, urlExpr)))
-                    infoNode.Item.InfoNodeType = InfoNodeType.Link;
+                    infoNode.Item.Type = DomNodeType.Link;
                 else if (element is IHtmlButtonElement)
-                    infoNode.Item.InfoNodeType = InfoNodeType.Button;
+                    infoNode.Item.Type = DomNodeType.Button;
                 else
-                    infoNode.Item.InfoNodeType = InfoNodeType.Text;
+                    infoNode.Item.Type = DomNodeType.Text;
             }
         }
-
         public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
 
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
@@ -62,13 +65,34 @@
             return baseTree;
         }
 
+        /// <summary>
+        /// Парсинг дочерних нод
+        /// </summary>
+        /// <param name="element">Контейнер содержащий ноды</param>
+        /// <param name="baseTree">Родительское дерево</param>
+        /// <returns>Очищенные дочерние ноды</returns>
         private IEnumerable<ITree<InfoNode>> ParseChildren(IParentNode element, ITree<InfoNode> baseTree) =>
-            element.Children.Select(x => this.ParseElementMap(x, baseTree))
-                    .Where(parsedMap => parsedMap != null && this.ValidateNode(parsedMap, baseTree))
-                    .Select(x => this.MoveItems(x, element));
+                //Парсим дочерние ноды
+                element.Children.Select(x => this.ParseElementMap(x, baseTree))
+                //Выкидываем пустые и невалидные ноды
+                .Where(parsedMap => parsedMap != null && this.ValidateNode(parsedMap, baseTree))
+                //Перемещаем одиночные ноды на уровень выше
+                .Select(x => this.MoveItems(x, element));
 
-        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => !baseNode.Contains(x => x.Selector == node.Item.Selector) && this.CheckRules.Any(x => x.Invoke(node));
+        /// <summary>
+        /// Проверка ноды на валидность
+        /// </summary>
+        /// <param name="node">Нода</param>
+        /// <param name="baseNode">Родительская нода</param>
+        /// <returns>Валидна ли нода</returns>
+        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => (baseNode == null || !baseNode.Contains(x => x.Selector == node.Item.Selector)) && this.CheckRules.Any(x => x.Invoke(node));
 
+        /// <summary>
+        /// Перемещение одиночных дочерних нод на уровень выше
+        /// </summary>
+        /// <param name="parsedMap">Спаршеная карта документа</param>
+        /// <param name="element">Родительский элемент</param>
+        /// <returns></returns>
         private ITree<InfoNode> MoveItems(ITree<InfoNode> parsedMap, IParentNode element)
         {
             var enumerator = parsedMap.Children.GetEnumerator();

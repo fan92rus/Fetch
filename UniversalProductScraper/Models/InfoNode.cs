@@ -8,7 +8,7 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    public enum InfoNodeType
+    public enum DomNodeType
     {
         Default,
         Link,
@@ -28,7 +28,7 @@
         public InfoNode(InfoNode node)
         {
             this.Selector = node.Selector;
-            this.InfoNodeType = node.InfoNodeType;
+            this.Type = node.Type;
             this.Element = node.Element;
         }
 
@@ -46,13 +46,13 @@
         public string Selector { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public InfoNodeType InfoNodeType { get; set; }
+        public DomNodeType Type { get; set; }
 
         public bool Equals(InfoNode other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return string.Equals(this.Selector, other.Selector) && this.InfoNodeType == other.InfoNodeType;
+            return string.Equals(this.Selector, other.Selector) && this.Type == other.Type;
         }
 
         public override bool Equals(object obj)
@@ -67,7 +67,7 @@
         {
             unchecked
             {
-                return ((this.Selector != null ? this.Selector.GetHashCode() : 0) * 397) ^ (int)this.InfoNodeType;
+                return ((this.Selector != null ? this.Selector.GetHashCode() : 0) * 397) ^ (int)this.Type;
             }
         }
     }

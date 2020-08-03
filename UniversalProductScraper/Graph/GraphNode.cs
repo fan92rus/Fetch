@@ -15,7 +15,6 @@ namespace UniversalProductScraper.Graph
     using QuickGraph.Graphviz;
 
     using UniversalProductScraper.Models;
-    using Type = UniversalProductScraper.Type;
 
     public interface ITree<T> : IEquatable<T>, IEnumerable<ITree<T>>
     {
@@ -42,12 +41,9 @@ namespace UniversalProductScraper.Graph
         public Tree(T root) : this() => this.Item = root;
         public Tree(T root, ITree<T> parent) : this(root)
         {
-            if (parent != this)
-            {
-                this.Parent = parent;
-                //this.Parent.Add((ITree<T>)this);
-            }
+            if (parent != this) this.Parent = parent;
         }
+        public Tree(T root, ITree<T> parent, IEnumerable<ITree<T>> children) : this(root, parent) => this.Children = children.ToList();
 
         public Tree(ITree<T> @base)
         {
@@ -148,7 +144,7 @@ namespace UniversalProductScraper.Graph
 
     public class BaseNode : IEquatable<BaseNode>
     {
-        public Type Type { get; set; }
+        public DomNodeType Type { get; set; }
         public string Selector { get; set; }
         public List<KeyValuePair<string, string>> Attributes { get; set; }
         public string Text { get; set; }
