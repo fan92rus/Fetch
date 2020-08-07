@@ -59,18 +59,6 @@
             return null;
         }
 
-        public List<string> TagList = new List<string>()
-                                          {
-                                              "p",
-                                              "span",
-                                              "div",
-                                              "a",
-                                              "pre",
-                                              "article",
-                                              "section",
-                                              "main","li","ul",
-                                              "td"
-                                          };
         private BaseNode SetNode(InfoNode child) => this.SetNode(child, child.Element);
 
         private BaseNode SetNode(InfoNode child, IElement element)
@@ -88,10 +76,18 @@
 
             var text = element.Text();
 
-            if (element is IHtmlScriptElement && element.InnerHtml != null)
-                n.Text = Regex.Unescape(HttpUtility.HtmlDecode(HttpUtility.UrlDecode(element.InnerHtml)));
-            else if (!string.IsNullOrEmpty(text) && (!element.Children.Any() || element?.Children?.Count(x => string.IsNullOrEmpty(x.Text())) / element?.Children?.Length > 0.8))
-                n.Text = Regex.Unescape(text).RemoveSpaces();
+            try
+            {
+                if (element is IHtmlScriptElement && element.InnerHtml != null)
+                    n.Text = Regex.Unescape(HttpUtility.HtmlDecode(HttpUtility.UrlDecode(element.InnerHtml)));
+                else if (!string.IsNullOrEmpty(text) && (!element.Children.Any() || element?.Children?.Count(x => string.IsNullOrEmpty(x.Text())) / element?.Children?.Length > 0.8))
+                    n.Text = Regex.Unescape(text).RemoveSpaces();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
 
             return n;
         }

@@ -3,8 +3,8 @@
     <div v-for="(row, index) in arrData" :key="index" class>
       <div class="rows">
         <div class="row key p-2 text-capitalize d-inline-block header-line">{{ keyTitle(row) }}</div>
-        <div class="row-data m-2 d-flex">
-          <div class="key p-2 text-capitalize d-inline-block line"></div>
+        <div class="m-2 d-flex">
+          <div v-if="!['string', 'number'].includes(checkValueType(data[row]))" class="key p-2 text-capitalize d-inline-block line"></div>
           <div v-if="['string', 'number'].includes(checkValueType(data[row]))">
             <div class="value p-2 d-inline-block">{{ data[row] }}</div>
           </div>
@@ -72,7 +72,10 @@ export default {
 }
 .wrap {
   flex-wrap: wrap;
+  justify-content: space-around;
   .wrap-item {
+    display: flex;
+    justify-content: center;
     border: 1px solid gray;
     margin: 4px;
     padding: 3px;
@@ -88,8 +91,8 @@ export default {
   padding: 0.2rem !important;
   &.line {
     &:hover {
-      transition-delay: 0.3s;
-      transition-duration: 1s;
+      transition-delay: 0.2s;
+      transition-duration: .1s;
       cursor: pointer;
       background: rgb(0, 162, 236);
     }
