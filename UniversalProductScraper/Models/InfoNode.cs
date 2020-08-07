@@ -52,13 +52,12 @@
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return string.Equals(this.Selector, other.Selector) && this.Type == other.Type;
+            var equals = string.Equals(this.Selector, other.Selector) && this.Type == other.Type;
+            return equals;
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
             return this.Equals((InfoNode)obj);
         }

@@ -6,28 +6,17 @@
     using System.IO;
     using System.Linq;
     using System.Net;
-
     using AngleSharp;
     using AngleSharp.Html.Dom;
     using AngleSharp.Html.Parser;
-
     using Boilerpipe.Net.Extractors;
-
     using Extentions.RestSharp;
-
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     using Polly;
     using Polly.Retry;
-
     using RestSharp;
-
-    using ServiceStack;
-
-    using Swan.Formatters;
-
     using UniversalProductScraper.Graph;
+    using UniversalProductScraper.Models;
 
     public class SortedBaseNodeTree
     {
@@ -51,7 +40,7 @@
     }
     class ScrapingService
     {
-        private TreeConverter converter = new TreeConverter();
+        private readonly TreeConverter converter = new TreeConverter();
 
         public ScrapingService()
         {
@@ -78,12 +67,10 @@
             var mapper = new DomMapper();
             var documentMap = mapper.ParseDocumentMap(doc);
             File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+            
             var data = new Scraper().ScrapNode(documentMap);
-            this.Trees = data.Select(x => new SortedBaseNodeTree(x));
-            this.PreProcessingScrapedData();
             File.WriteAllText("data\\data.json", JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
-            var text = CommonExtractors.ArticleExtractor.GetText(page);
             var objects = this.converter.Convert(data);
             return (ExpandoObject)objects;
         }
@@ -92,7 +79,7 @@
 
 
 
-        public void PreProcessingScrapedData()
+        public void PreProcessingScrapedData(Tree<InfoNode> nodes)
         {
             var groupedTrees = this.Trees.GroupBy(x => x.Key);
             foreach (var groupedTree in groupedTrees)

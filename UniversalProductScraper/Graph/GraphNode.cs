@@ -16,7 +16,7 @@ namespace UniversalProductScraper.Graph
 
     using UniversalProductScraper.Models;
 
-    public interface ITree<T> : IEquatable<T>, IEnumerable<ITree<T>>
+    public interface ITree<T> : IEquatable<T>
     {
         T Item { get; set; }
         ICollection<ITree<T>> Children { get; set; }
@@ -87,9 +87,17 @@ namespace UniversalProductScraper.Graph
         public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
 
         private bool CheckThis(T item) => this.Item != null && this.Item.Equals(item);
+        private bool CheckThis(ITree<T> tree)
+        {
+            var equalThis = this.CheckThis(tree.Item);
+            //var equalsChildren = tree.Children.All(x => this.Children.Any(e => e == x));
+            var nonEqualChildren = !tree.Children.Select(x => x.Item).Except(this.Children.Select(x => x.Item)).Any();
+            return equalThis && nonEqualChildren;
+        }
+
         public bool Contains(Func<T, bool> func) => (this.Item != null && func.Invoke(this?.Item)) || (this.Children != null && this.Children.Any(x => x.Contains(func)));
         public bool Contains(T item) => this.CheckThis((T)item) || (this.Children != null && this.Children.Any(x => x.Contains(item)));
-        public bool Contains(ITree<T> item) => this.CheckThis(item.Item) || this.Children.Any(x => x.Contains(item));
+        public bool Contains(ITree<T> item) => this.CheckThis(item) || this.Children.Any(x => x.Contains(item));
 
         public IEnumerable<T> GetCollection()
         {
@@ -101,29 +109,15 @@ namespace UniversalProductScraper.Graph
         }
 
         public static implicit operator T(Tree<T> tree) => tree.Item;
-        protected bool Equals(Tree<T> other) => EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
+        protected bool Equals(ITree<T> other) => EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
         public bool Equals(T obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return this.Equals(obj);
+            return this.Equals((ITree<T>)obj);
         }
 
-        public IEnumerator<ITree<T>> GetEnumerator()
-        {
-            yield return this;
-
-            foreach (var child in this.Children)
-            {
-                var enumerator = child.GetEnumerator();
-
-                while (enumerator.MoveNext())
-                {
-                    yield return enumerator.Current;
-                }
-            }
-        }
 
         public override int GetHashCode()
         {
@@ -132,13 +126,31 @@ namespace UniversalProductScraper.Graph
                 return (EqualityComparer<T>.Default.GetHashCode(this.Item) * 397) ^ (this.Children != null ? this.Children.GetHashCode() : 0);
             }
         }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
     }
 
+    //class EnumerableTree<T> : Tree<T>, IEnumerable<ITree<T>> where T : class
+    //{
+
+    //    public IEnumerator<ITree<T>> GetEnumerator()
+    //    {
+    //        yield return this;
+
+    //        foreach (Tree<T> child in this.Children)
+    //        {
+    //            var enumerator = (child as EnumerableTree<T>).GetEnumerator();
+
+    //            while (enumerator.MoveNext())
+    //            {
+    //                yield return enumerator.Current;
+    //            }
+    //        }
+    //    }
+
+    //    IEnumerator IEnumerable.GetEnumerator()
+    //    {
+    //        return this.GetEnumerator();
+    //    }
+    //}
     public class BaseNode : IEquatable<BaseNode>
     {
         public DomNodeType Type { get; set; }
@@ -170,7 +182,7 @@ namespace UniversalProductScraper.Graph
 
         public bool Equals(BaseNode other)
         {
-            bool equals = this.Type == other.Type && this.Selector == other.Selector && this.Text == other.Text && !this.Attributes.Except(other.Attributes).Any();
+            bool equals = this.Type == other.Type && this.Selector == other.Selector && ((this.Text != null && other.Text != null && this.Text.Equals(other.Text, StringComparison.InvariantCultureIgnoreCase)) || this.Text == other.Text) && !this.Attributes.Except(other.Attributes).Any();
             return equals;
         }
 

@@ -6,6 +6,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
 
     using MoreLinq;
 
@@ -24,10 +25,11 @@
         {
             var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = DomNodeType.Container };
 
-            var finalNode = new Tree<InfoNode>(root) { this.ParseElementMap(doc.QuerySelector("head")), this.ParseElementMap(doc.QuerySelector("body")) };
+            var finalNode = new Tree<InfoNode>(root);
+            finalNode.Add(this.ParseElementMap(doc.QuerySelector("head")));
+            finalNode.Add(this.ParseElementMap(doc.QuerySelector("body")));
 
             this.DefineTypes(finalNode);
-
             return finalNode;
         }
 
@@ -76,15 +78,18 @@
         /// <returns>Очищенные дочерние ноды</returns>
         private void ParseChildren(IParentNode element, ITree<InfoNode> baseTree)
         {
-            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).DistinctBy(x => x.Item);
-            
+            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null);
+
+            ITree<InfoNode> parsedTrees = new Tree<InfoNode>();
+
             foreach (var child in parsedChildren)
             {
                 this.MoveItems(child, element, baseTree);
-
-                if (!baseTree.Contains(child))
-                    baseTree.Add(child);
+                //if (!parsedTrees.Contains(child))
+                parsedTrees.Add(child);
             }
+
+            baseTree.AddRange(parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderBy(e => e.Children.Count).FirstOrDefault()));
         }
 
         /// <summary>

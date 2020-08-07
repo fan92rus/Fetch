@@ -65,6 +65,6 @@
         /// <param name="str">строка для обработки</param>
         /// <returns>строка очищенная от html тегов</returns>
         public static string RemoveTags(this string str) => HttpUtility.HtmlDecode(Regex.Replace(str, "<[^>]+>\\s+(?=<)|<[^>]+>", ""));
-        public static string RemoveSpaces(this string str) => Regex.Replace(str.Replace("\n", "").Replace("\r", ""), "\\s+", "");
+        public static string RemoveSpaces(this string str) => Regex.Replace(str.Replace("\n", "").Replace("\r", ""), "\\s+", " ");
     }
 }

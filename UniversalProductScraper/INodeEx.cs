@@ -169,13 +169,19 @@
             var classSelector = GetClassSelector(element);
             var idSelector = GetIdSelector(element);
 
-            if (element.TagName != null && !element.TagName.Contains(":"))
-                selector = element.TagName.ToLower();
+            if (element.LocalName != null && !element.LocalName.Contains(":"))
+                selector = Regex.Replace(element.LocalName, ":.+", "");
 
 
             if (!string.IsNullOrEmpty(element.ClassName) && !string.IsNullOrEmpty(classSelector))
-                if (type != SelectorType.Concrete || (checkElement != null && (checkElement.QuerySelectorAll(classSelector).Length == 1)))
+                if ((type != SelectorType.Concrete || (checkElement != null && (checkElement.QuerySelectorAll(classSelector).Length == 1))) && classSelector != selector)
                     return classSelector;
+
+            //МБ перенести ниже
+            var attr = element.Attributes.FirstOrDefault(x => !string.IsNullOrEmpty(x?.Name) && x.Name != "id" && !x.Name.Contains(":") && x.Name != "href" && x.Name != "class");
+
+            if (attr != null && !attr.Name.Contains("\""))
+                return $"{selector}[{attr.Name}]";
 
             if (!string.IsNullOrEmpty(selector) && maxSelector != null && !selector.Contains(maxSelector) && element.ParentElement != null && idSelector == null)
             {
@@ -187,7 +193,7 @@
 
                     var index = parent.Children.Where(_ => _.GetType() == element.GetType()).Index(element);
 
-                    return index == 0 ? selector : $"{selector}:nth-child({index + 1})";
+                    return $"{selector}:nth-child({index + 1})";
                 }
             }
 
@@ -198,12 +204,6 @@
                 if (maxSelector != null && !parentSelector.Contains(maxSelector))
                     return $"{parentSelector} > {selector}";
             }
-
-
-            var attr = element.Attributes.FirstOrDefault(x => !string.IsNullOrEmpty(x?.Name) && x.Name != "id" && !x.Name.Contains(":"));
-
-            if (attr != null && !attr.Name.Contains("\""))
-                return $"{selector}[{attr.Name}]";
 
             if (!string.IsNullOrEmpty(idSelector))
                 return selector + idSelector;

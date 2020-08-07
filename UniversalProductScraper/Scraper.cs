@@ -5,14 +5,11 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using System.Web;
 
+    using AngleSharp;
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
-
-    using Boilerpipe.Net.Extractors;
-
-    using Jint.Parser.Ast;
-
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
     using Node = Models.Node;
@@ -86,31 +83,15 @@
                 Type = child.Type,
             };
             Console.WriteLine("SCRAP  - " + n.Selector);
+
             var flags = (int)child.Element.Flags;
 
-            //if (this.CheckFlags(flags))
-            {
-                //var count = Tree.ChildNodes.Count(this.CheckTextElements());
+            var text = element.Text();
 
-                //var textElements = Tree.ChildNodes?.Where(this.CheckTextElements());
-
-                //var text = string.Join(" ", textElements?.Select(x => x.TextContent)).RemoveSpaces();
-                //float index = (float)text.Length / child.Element.TextContent.Length;                
-
-                var text = element.TextContent;
-
-                try
-                {
-                    if (element is IHtmlScriptElement)
-                        n.Text = Regex.Unescape(element.InnerHtml);
-                    else if (this.CheckTextElements(element))
-                        n.Text = Regex.Unescape(Regex.Replace(text.Replace("\n", "").Replace("\r", ""), "\\s+", " ").Trim());
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            }
+            if (element is IHtmlScriptElement && element.InnerHtml != null)
+                n.Text = Regex.Unescape(HttpUtility.HtmlDecode(HttpUtility.UrlDecode(element.InnerHtml)));
+            else if (!string.IsNullOrEmpty(text) && (!element.Children.Any() || element?.Children?.Count(x => string.IsNullOrEmpty(x.Text())) / element?.Children?.Length > 0.8))
+                n.Text = Regex.Unescape(text).RemoveSpaces();
 
             return n;
         }

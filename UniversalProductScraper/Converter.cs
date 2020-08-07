@@ -17,6 +17,11 @@
             target.AddRange(this.FullChildrenProcessing(fullChildren));
             target.AddRange(this.VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
 
+            foreach (var prop in tree.Item.GetProperties())
+            {
+                target.Add(prop.Key, prop.Value);
+            }
+
             return target;
         }
 

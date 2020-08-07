@@ -5,7 +5,7 @@
     <button @click="addPage({params:{link}})">add page</button>
 
     <input v-model="link" />
-    <vue-json-to-table :data="tables"></vue-json-to-table>
+    <vueJsonToTable :data="tables"></vueJsonToTable>
   </div>
 </template>
 
@@ -13,7 +13,7 @@
 // @ is an alias to /src
 import { mapState, mapActions } from "vuex";
 import { AgGridVue } from "ag-grid-vue";
-
+import vueJsonToTable from "../components/VueJsonToTable";
 export default {
   name: "Home",
   data: () => {
@@ -21,7 +21,7 @@ export default {
       link: "",
     };
   },
-  components: { AgGridVue },
+  components: { vueJsonToTable },
   computed: mapState({
     tables: (state) => state.tables,
   }),
