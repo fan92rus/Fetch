@@ -36,27 +36,10 @@
     {
         private readonly ScrapingService scrapingService = new ScrapingService();
 
-        [Route(HttpVerbs.Any, "/tables")]
-        public IEnumerable<Table> GetTables()
-        {
-            var tables = this.scrapingService.GetTables();
-            File.WriteAllText("tables.json", JsonConvert.SerializeObject(tables));
-            return tables;
-        }
-
         [Route(HttpVerbs.Post, "/tables/add/")]
-        public IEnumerable<Table> AddLink([QueryField]string link)
+        public string AddLink([QueryField]string link)
         {
-            this.scrapingService.ScrapPage(link);
-            return this.GetTables();
-        }
-
-
-        [Route(HttpVerbs.Post, "/tables/clear/")]
-        public IEnumerable<Table> Clear()
-        {
-            this.scrapingService.Clear();
-            return this.GetTables();
+            return JsonConvert.SerializeObject(this.scrapingService.ScrapPage(link));
         }
     }
 }
