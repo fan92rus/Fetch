@@ -75,7 +75,8 @@ export default {
   justify-content: space-around;
   .wrap-item {
     display: flex;
-    justify-content: center;
+    flex-grow: 1;
+    justify-content: space-between;
     border: 1px solid gray;
     margin: 4px;
     padding: 3px;
@@ -92,7 +93,7 @@ export default {
   &.line {
     &:hover {
       transition-delay: 0.2s;
-      transition-duration: .1s;
+      transition-duration: 0.1s;
       cursor: pointer;
       background: rgb(0, 162, 236);
     }

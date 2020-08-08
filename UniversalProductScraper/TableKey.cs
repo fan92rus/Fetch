@@ -3,11 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using SimhashLib;
 
-    using UniversalProductScraper.Graph;
-    
     public partial struct TableKey : IEquatable<TableKey>
     {
         public TableKey(string name, string containerSelector, Simhash propertyHash)
@@ -49,7 +46,7 @@
 
         public override string ToString()
         {
-            return $"{this.ParentKey}_{this.Name}_{this.PropertyHash.value.GetHashCode()}";
+            return $"{this.Name}_{this.PropertyHash.value.GetHashCode()}";
         }
     }
 }

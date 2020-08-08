@@ -50,14 +50,12 @@
 
             foreach (var group in subElements.GroupBy(x => x.Item.Selector))
             {
-                var key = $"{group.FirstOrDefault()?.Parent?.Item?.Selector ?? ""}_{@group.Key}";
-
                 var objects = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
 
                 if (objects.Count() == 1)
-                    target[key] = objects.FirstOrDefault();
+                    target[@group.Key] = objects.FirstOrDefault();
                 else
-                    target[key] = objects;
+                    target[@group.Key] = objects;
             }
 
             return target;
