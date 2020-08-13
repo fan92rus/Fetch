@@ -1,4 +1,6 @@
-﻿namespace UniversalProductScraper
+﻿using UniversalProductScraper.Graph;
+
+namespace UniversalProductScraper
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -17,34 +19,17 @@
         static DI()
         {
             Container = new UnityContainer();
-            Container.RegisterType<IWebLoader, RequestWebLoader>(new ContainerControlledLifetimeManager());
-            Container.RegisterType<TreeConverter>(new ContainerControlledLifetimeManager());
-
+            Container.RegisterType<IDomMapper, DomMapper>();
+            Container.RegisterType<IScraper, Scraper>();
+            Container.RegisterType<ITreeConverter, TreeConverter>();
+            Container.RegisterType<IWebLoader, RequestWebLoader>();
+            Container.RegisterType(typeof(ITreeBuilder<>), typeof(TreeBuilder<>));
         }
     }
     class Program
     {
         public static async Task Main(string[] args)
         {
-            DataStructure structure = new DataStructure("main")
-                                          {
-                                              Children = new List<DataStructure>()
-                                                             {
-                                                                 new DataStructure("film")
-                                                                     {
-                                                                         Children = new List<DataStructure>()
-                                                                                        {
-                                                                                            new DataStructure(
-                                                                                                "Raiting"),
-                                                                                            new DataStructure("Reviews")
-                                                                                        }
-                                                                     },
-                                                                 new DataStructure("menu")
-                                                             }
-                                          };
-
-            var json = JsonConvert.SerializeObject(structure);
-
             var server = new WebServer().WithCors().WithWebApi("/", x => x.WithController<TableResource>());
             await server.RunAsync();
         }

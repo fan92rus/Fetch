@@ -1,11 +1,19 @@
-﻿namespace UniversalProductScraper
+﻿using System;
+
+namespace UniversalProductScraper
 {
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
     using UniversalProductScraper.Extensions;
     using UniversalProductScraper.Graph;
-    class TreeConverter
+
+    internal interface ITreeConverter
+    {
+        IDictionary<string, object> Convert(ITree<BaseNode> tree);
+    }
+
+    class TreeConverter : ITreeConverter
     {
         public IDictionary<string, object> Convert(ITree<BaseNode> tree)
         {
@@ -51,11 +59,11 @@
             foreach (var group in subElements.GroupBy(x => x.Item.Selector))
             {
                 var objects = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
-
+                var key = @group.Key.Split('.')[0];
                 if (objects.Count() == 1)
-                    target[@group.Key] = objects.FirstOrDefault();
+                    target[key] = objects.FirstOrDefault();
                 else
-                    target[@group.Key] = objects;
+                    target[key] = objects;
             }
 
             return target;

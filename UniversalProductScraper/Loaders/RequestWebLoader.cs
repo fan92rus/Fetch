@@ -2,16 +2,12 @@
 {
     using System;
     using System.Net;
-
     using AngleSharp;
     using AngleSharp.Html.Dom;
     using AngleSharp.Html.Parser;
-
     using Extentions.RestSharp;
-
     using Polly;
     using Polly.Retry;
-
     using RestSharp;
 
     public class RequestWebLoader : IWebLoader

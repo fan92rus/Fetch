@@ -35,23 +35,30 @@
 
     class ScrapingService
     {
-        [Dependency]
-        public TreeConverter Converter { get; set; }
-
-        [Dependency]
-        public IWebLoader WebLoader { get; set; }
-
-        public ExpandoObject ScrapPage(string url)
+        public ScrapingService(ITreeConverter converter, IWebLoader webLoader, IDomMapper domMapper, IScraper scraper)
         {
-            var mapper = new DomMapper();
+            this.Converter = converter;
+            this.Mapper = domMapper;
+            this.WebLoader = webLoader;
+            this.Scraper = scraper;
+        }
 
+        private ITreeConverter Converter { get; }
+        private IWebLoader WebLoader { get; }
+        private IDomMapper Mapper { get; }
+        private IScraper Scraper { get; }
+
+        public IDictionary<string, object> ScrapPage(string url)
+        {
             var doc = this.WebLoader.LoadPageFromString(this.WebLoader.GetPageContent(url));
-            var documentMap = mapper.ParseDocumentMap(doc);
-            File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
-            var data = new Scraper().ScrapNode(documentMap);
-            //File.WriteAllText("data\\data.json", JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+            var documentMap = Mapper.ParseDocumentMap(doc);
+            var data = Scraper.ScrapNode(documentMap);
             var objects = this.Converter.Convert(data);
-            return (ExpandoObject)objects;
+            File.WriteAllText("data\\res.json", JsonConvert.SerializeObject(objects, Formatting.Indented, new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            }));
+            return objects;
         }
 
     }

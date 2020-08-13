@@ -1,4 +1,6 @@
-﻿namespace UniversalProductScraper
+﻿using Unity;
+
+namespace UniversalProductScraper
 {
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
@@ -13,8 +15,16 @@
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
 
-    class DomMapper
+    internal interface IDomMapper
     {
+        ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc);
+    }
+
+    class DomMapper : IDomMapper
+    {
+        [Dependency]
+        public ITreeBuilder<InfoNode> TreeBuilder { get; set; }
+
         public List<Func<ITree<InfoNode>, bool>> CheckRules = new List<Func<ITree<InfoNode>, bool>>()
                                                            {
                                                                x=>x.Children.Any(),
@@ -25,7 +35,7 @@
         {
             var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = DomNodeType.Container };
 
-            var finalNode = new Tree<InfoNode>(root);
+            var finalNode = TreeBuilder.Create(root);
             finalNode.Add(this.ParseElementMap(doc.QuerySelector("head")));
             finalNode.Add(this.ParseElementMap(doc.QuerySelector("body")));
 
@@ -65,7 +75,7 @@
         public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
-            var baseTree = new Tree<InfoNode>(new InfoNode(element), parent);
+            var baseTree = this.TreeBuilder.Create(new InfoNode(element), parent);
             this.ParseChildren(element, baseTree);
             return baseTree;
         }
@@ -80,7 +90,7 @@
         {
             var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null);
 
-            ITree<InfoNode> parsedTrees = new Tree<InfoNode>();
+            var parsedTrees = TreeBuilder.Create();
 
             foreach (var child in parsedChildren)
             {

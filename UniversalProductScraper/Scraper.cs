@@ -1,4 +1,6 @@
-﻿namespace UniversalProductScraper
+﻿using Unity;
+
+namespace UniversalProductScraper
 {
     using System;
     using System.Collections.Generic;
@@ -14,11 +16,19 @@
     using UniversalProductScraper.Models;
     using Node = Models.Node;
 
-    class Scraper
+
+    internal interface IScraper
     {
+        ITree<BaseNode> ScrapNode(ITree<InfoNode> info);
+    }
+
+    class Scraper : IScraper
+    {
+        [Dependency]
+        public ITreeBuilder<BaseNode> TreeBuilder { get; set; }
         public ITree<BaseNode> ScrapNode(ITree<InfoNode> info)
         {
-            ITree<BaseNode> tree = new Tree<BaseNode>(this.SetNode(info.Item));
+            ITree<BaseNode> tree = this.TreeBuilder.Create(this.SetNode(info.Item));
 
             foreach (var child in info.Children)
             {
@@ -59,7 +69,7 @@
             return null;
         }
 
-        private BaseNode SetNode(InfoNode child) => this.SetNode(child, child.Element);
+        public BaseNode SetNode(InfoNode child) => this.SetNode(child, child.Element);
 
         private BaseNode SetNode(InfoNode child, IElement element)
         {

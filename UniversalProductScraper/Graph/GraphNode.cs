@@ -4,16 +4,8 @@ using System.Text;
 
 namespace UniversalProductScraper.Graph
 {
-    using System.Collections;
-    using System.ComponentModel;
     using System.Linq;
-
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
-    using QuickGraph;
-    using QuickGraph.Graphviz;
-
     using UniversalProductScraper.Models;
 
     public interface ITree<T> : IEquatable<T>
@@ -34,6 +26,21 @@ namespace UniversalProductScraper.Graph
         bool Remove(ITree<T> item);
     }
 
+    public interface ITreeBuilder<T> where T : class
+    {
+        ITree<T> Create();
+        ITree<T> Create(T root);
+        ITree<T> Create(T root, ITree<T> parent);
+        ITree<T> Create(ITree<T> @base);
+    }
+
+    public class TreeBuilder<T> : ITreeBuilder<T> where T : class
+    {
+        public ITree<T> Create() => new Tree<T>();
+        public ITree<T> Create(T root) => new Tree<T>(root);
+        public ITree<T> Create(T root, ITree<T> parent) => new Tree<T>(root, parent);
+        public ITree<T> Create(ITree<T> @base) => new Tree<T>(@base);
+    }
 
     class Tree<T> : ITree<T> where T : class
     {
@@ -43,8 +50,6 @@ namespace UniversalProductScraper.Graph
         {
             if (parent != this) this.Parent = parent;
         }
-        public Tree(T root, ITree<T> parent, IEnumerable<ITree<T>> children) : this(root, parent) => this.Children = children.ToList();
-
         public Tree(ITree<T> @base)
         {
             this.Children = @base.Children;

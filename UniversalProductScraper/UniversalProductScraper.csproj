@@ -10,42 +10,27 @@
     <PackageReference Include="AngleSharp.ContentExtraction" Version="0.0.2" />
     <PackageReference Include="AngleSharp.Io" Version="0.14.0" />
     <PackageReference Include="AngleSharp.Js" Version="0.14.0" />
-    <PackageReference Include="Boilerpipe.Net" Version="1.2.0" />
     <PackageReference Include="EmbedIO" Version="3.4.3" />
-    <PackageReference Include="Graphviz" Version="2.38.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Polly" Version="7.2.1" />
-    <PackageReference Include="QuickGraph" Version="3.6.61119.7" />
-    <PackageReference Include="QuikGraph.Graphviz" Version="2.2.0" />
     <PackageReference Include="RestSharp" Version="106.11.4" />
     <PackageReference Include="Selenium.Chrome.WebDriver" Version="83.0.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="ServiceStack.Text" Version="5.9.0" />
+    <PackageReference Include="System.Data.HashFunction.Jenkins" Version="2.0.0" />
     <PackageReference Include="Unity" Version="5.11.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Extentions">
-      <HintPath>..\..\Scraper\Extentions\bin\Debug\Extentions.dll</HintPath>
+    <Reference Include="Polly">
+      <HintPath>..\..\Scraper-Vouchers\Extentions\bin\Debug\Polly.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNetCore.Components">
-      <HintPath>..\..\..\..\..\..\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.1.0\ref\netcoreapp3.1\Microsoft.AspNetCore.Components.dll</HintPath>
+    <Reference Include="RestSharp.Polly.Extensions.Core">
+      <HintPath>..\..\Scraper-Vouchers\RestSharp.PollyExtensions.Core\bin\Debug\netcoreapp3.1\RestSharp.Polly.Extensions.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SimhashLib">
-      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\SimhashLib.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.HashFunction.Core">
-      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.HashFunction.Interfaces">
-      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.HashFunction.Jenkins">
-      <HintPath>..\..\..\..\Game\simhash-csharp\src\Simhash\SimhashLib\bin\Debug\System.Data.HashFunction.Jenkins.dll</HintPath>
+    <Reference Include="Simhash.Core">
+      <HintPath>..\..\simhash-csharp\src\Simhash\Simhash.Core\bin\Debug\netcoreapp3.1\Simhash.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 

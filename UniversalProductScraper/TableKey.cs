@@ -5,7 +5,7 @@
     using System.Linq;
     using SimhashLib;
 
-    public partial struct TableKey : IEquatable<TableKey>
+    public readonly struct TableKey : IEquatable<TableKey>
     {
         public TableKey(string name, string containerSelector, Simhash propertyHash)
         {
@@ -18,7 +18,7 @@
         public string Name { get; }
         public string ParentKey { get; }
 
-        private const int EqualsDistance = 15;
+        private const int EqualsDistance = 20;
 
         public static TableKey Create(string parentSelector, string key, IDictionary<string, string> els)
         {
@@ -35,14 +35,13 @@
         public bool Equals(TableKey other)
         {
             var distance = this.PropertyHash.distance(other.PropertyHash);
-            return distance < 20 && other.ParentKey == this.ParentKey && string.Equals(this.Name, other.Name);
+            return distance < EqualsDistance && other.ParentKey == this.ParentKey && string.Equals(this.Name, other.Name);
         }
 
         public override int GetHashCode()
         {
             return $"{this.Name}{this.ParentKey}{this.PropertyHash.value}".GetHashCode(StringComparison.CurrentCultureIgnoreCase);
         }
-
 
         public override string ToString()
         {
