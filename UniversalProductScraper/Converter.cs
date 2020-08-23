@@ -25,10 +25,15 @@ namespace UniversalProductScraper
             target.AddRange(this.FullChildrenProcessing(fullChildren));
             target.AddRange(this.VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
 
-            foreach (var (key, value) in tree.Item.GetProperties()) target.Add(key, value);
+            foreach (var (key, value) in tree.Item.GetProperties())
+            {
+                target.Add(key, value);
+            }
 
             return target;
         }
+
+        private static string GetKey(string key) => key.Contains(">") ? key.Split(">").Last().Trim() : key.Split('.').Last();
 
         private IDictionary<string, object> VoidChildrenProcessing(IEnumerable<SortedBaseNodeTree> targetEls)
         {
@@ -59,7 +64,9 @@ namespace UniversalProductScraper
             foreach (var group in subElements.GroupBy(x => x.Item.Selector))
             {
                 var objects = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
-                var key = @group.Key.Split('.')[0];
+
+                var key = group.Key;// GetKey();
+
                 if (objects.Count() == 1)
                     target[key] = objects.FirstOrDefault();
                 else

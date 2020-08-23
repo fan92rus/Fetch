@@ -6,5 +6,6 @@
     {
         string GetPageContent(string uri);
         IHtmlDocument LoadPageFromString(string text);
+        IHtmlDocument GetPage(string url);
     }
 }

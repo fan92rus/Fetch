@@ -1,4 +1,5 @@
-﻿using UniversalProductScraper.Graph;
+﻿using SimhashLib;
+using UniversalProductScraper.Graph;
 
 namespace UniversalProductScraper
 {
@@ -40,7 +41,7 @@ namespace UniversalProductScraper
         private readonly ScrapingService scrapingService = DI.Container.Resolve<ScrapingService>();
 
         [Route(HttpVerbs.Post, "/tables/add/")]
-        public string AddLink([QueryField]string link)
+        public string AddLink([QueryField] string link)
         {
             return JsonConvert.SerializeObject(this.scrapingService.ScrapPage(link));
         }

@@ -6,7 +6,11 @@
     {
         public static void AddRange(this IDictionary<string, object> target, IDictionary<string, object> elements)
         {
-            foreach (var element in elements) target.Add(element.Key, element.Value);
+            foreach (var element in elements)
+            {
+                if (!target.ContainsKey(element.Key))
+                    target.Add(element.Key, element.Value);
+            }
         }
     }
 }

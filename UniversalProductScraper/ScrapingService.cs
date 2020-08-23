@@ -1,4 +1,8 @@
-﻿namespace UniversalProductScraper
+﻿using System.Security.Cryptography.X509Certificates;
+using SimhashLib;
+using UniversalProductScraper.Models;
+
+namespace UniversalProductScraper
 {
     using System.Collections.Generic;
     using System.Dynamic;
@@ -35,6 +39,8 @@
 
     class ScrapingService
     {
+        private static IDictionary<Simhash, ITree<InfoNode>> maps = new Dictionary<Simhash, ITree<InfoNode>>();
+
         public ScrapingService(ITreeConverter converter, IWebLoader webLoader, IDomMapper domMapper, IScraper scraper)
         {
             this.Converter = converter;
@@ -50,16 +56,36 @@
 
         public IDictionary<string, object> ScrapPage(string url)
         {
-            var doc = this.WebLoader.LoadPageFromString(this.WebLoader.GetPageContent(url));
-            var documentMap = Mapper.ParseDocumentMap(doc);
+            var doc = this.WebLoader.GetPage(url);
+
+            var hash = new Simhash(Simhash.HashingType.Jenkins);
+            hash.GenerateSimhash(doc.Head.InnerHtml);
+
+            var okMaps = maps?.Where(x => x.Key.distance(hash) < 5);
+
+            ITree<InfoNode> documentMap;
+
+            if (okMaps.Any())
+                documentMap = okMaps.Min().Value;
+            else
+            {
+                documentMap = Mapper.ParseDocumentMap(doc);
+                maps.Add(hash, documentMap);
+            }
+
+            File.WriteAllText("data\\map.json", JsonConvert.SerializeObject(documentMap, Formatting.Indented, new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            }));
+
             var data = Scraper.ScrapNode(documentMap);
             var objects = this.Converter.Convert(data);
+
             File.WriteAllText("data\\res.json", JsonConvert.SerializeObject(objects, Formatting.Indented, new JsonSerializerSettings()
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             }));
             return objects;
         }
-
     }
 }

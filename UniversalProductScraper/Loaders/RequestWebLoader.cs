@@ -32,7 +32,7 @@
             
             var rc = new RestClient();
             var req = new RestRequest(target);
-            req.AddHeader("Content-Type", "text/html; charset=utf-8");
+            req.AddHeader("Content-Type", "url/html; charset=utf-8");
             var resp = rc.ExecuteWitHeaders(req, this.Policy);
             
             return resp.Content;
@@ -41,12 +41,17 @@
 
         public IHtmlDocument LoadPageFromString(string text)
         {
-            var config = Configuration.Default.WithDefaultLoader().WithCss().WithJs();
+            var config = Configuration.Default.WithDefaultLoader().WithCss();
             var context = BrowsingContext.New(config);
             var parser = context.GetService<IHtmlParser>();
             var doc = parser.ParseDocument(text);
 
             return doc;
+        }
+
+        public IHtmlDocument GetPage(string url)
+        {
+            return LoadPageFromString(GetPageContent(url));
         }
     }
 }

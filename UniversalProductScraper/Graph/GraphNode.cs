@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -133,29 +134,29 @@ namespace UniversalProductScraper.Graph
         }
     }
 
-    //class EnumerableTree<T> : Tree<T>, IEnumerable<ITree<T>> where T : class
-    //{
+    class EnumerableTree<T> : Tree<T>, ITree<T>, IEnumerable<ITree<T>> where T : class
+    {
 
-    //    public IEnumerator<ITree<T>> GetEnumerator()
-    //    {
-    //        yield return this;
+        public IEnumerator<ITree<T>> GetEnumerator()
+        {
+            yield return this;
 
-    //        foreach (Tree<T> child in this.Children)
-    //        {
-    //            var enumerator = (child as EnumerableTree<T>).GetEnumerator();
+            foreach (Tree<T> child in this.Children)
+            {
+                var enumerator = (child as EnumerableTree<T>).GetEnumerator();
 
-    //            while (enumerator.MoveNext())
-    //            {
-    //                yield return enumerator.Current;
-    //            }
-    //        }
-    //    }
+                while (enumerator.MoveNext())
+                {
+                    yield return enumerator.Current;
+                }
+            }
+        }
 
-    //    IEnumerator IEnumerable.GetEnumerator()
-    //    {
-    //        return this.GetEnumerator();
-    //    }
-    //}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
+    }
     public class BaseNode : IEquatable<BaseNode>
     {
         public DomNodeType Type { get; set; }

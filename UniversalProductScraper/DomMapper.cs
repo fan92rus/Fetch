@@ -1,4 +1,6 @@
-﻿using Unity;
+﻿using ServiceStack;
+using SimhashLib;
+using Unity;
 
 namespace UniversalProductScraper
 {
@@ -86,9 +88,14 @@ namespace UniversalProductScraper
         /// <param name="element">Контейнер содержащий ноды</param>
         /// <param name="baseTree">Родительское дерево</param>
         /// <returns>Очищенные дочерние ноды</returns>
-        private void ParseChildren(IParentNode element, ITree<InfoNode> baseTree)
+        private void ParseChildren(IElement element, ITree<InfoNode> baseTree)
         {
-            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null);
+            if (element.Children.Any(x => x?.ClassName == "coupon-store-item"))
+            {
+
+            }
+
+            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).ToList();
 
             var parsedTrees = TreeBuilder.Create();
 
@@ -99,7 +106,24 @@ namespace UniversalProductScraper
                 parsedTrees.Add(child);
             }
 
-            baseTree.AddRange(parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderBy(e => e.Children.Count).FirstOrDefault()));
+            var test = parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderByDescending(e => e.Children.Count));
+            ;
+
+            var groupingTrees = test.Select(tree => tree.Select(x =>
+            {
+                var childrenHashes = x.Children.Select(ch => ch.Item.Selector).Concat(new List<string>() { x.Item.Selector }).ToList();
+                Simhash simhash = new Simhash();
+                simhash.GenerateSimhash(childrenHashes);
+                return new { target = x, Key = simhash };
+            }).GroupBy(x => x.Key, new HashComparer(10)));
+
+            foreach (var treeGroup in groupingTrees)
+            {
+                var target = treeGroup.FirstOrDefault()?.OrderByDescending(x => x?.target?.Children?.Count)?.FirstOrDefault()?.target;
+                baseTree.Add(target);
+            }
+
+            //baseTree.AddRange(parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderByDescending(e => e.Children.Count).FirstOrDefault()));
         }
 
         /// <summary>
@@ -120,6 +144,8 @@ namespace UniversalProductScraper
         private void MoveItems(ITree<InfoNode> parsedMap, IParentNode element, ITree<InfoNode> baseTree)
         {
             var enumerator = parsedMap.Children.GetEnumerator();
+            if (parsedMap.Item.Element is IHtmlTableElement || parsedMap.Item.Element is IHtmlTableRowElement)
+                return;
 
             while (enumerator.MoveNext())
             {
@@ -145,6 +171,51 @@ namespace UniversalProductScraper
 
             //if (this.ValidateNode(parsedMap))
             //    baseTree.Add(parsedMap);
+        }
+    }
+    class HashComparer : IEqualityComparer<Simhash>
+    {
+        public int Distance { get; }
+
+        public HashComparer(int distance)
+        {
+            Distance = distance;
+        }
+        public bool Equals(Simhash a, Simhash b)
+        {
+            return a.distance(b) < Distance;
+        }
+
+        public int GetHashCode(Simhash hash)
+        {
+            return hash.value.GetHashCode();
+        }
+    }
+    public struct SimhashKey : IEquatable<SimhashKey>
+    {
+        public Simhash Hash { get; }
+        public int Distance { get; }
+        public SimhashKey(Simhash hash, int distance)
+        {
+            this.Distance = distance;
+            Hash = hash;
+        }
+
+
+        public bool Equals(SimhashKey other)
+        {
+            var avg = new List<int>() { Distance, other.Distance }.Average();
+            return this.Hash.distance(other.Hash) < avg;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SimhashKey other && this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Hash != null ? Hash.GetHashCode() : 0);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace UniversalProductScraper
             {
                 if (element is IHtmlScriptElement && element.InnerHtml != null)
                     n.Text = Regex.Unescape(HttpUtility.HtmlDecode(HttpUtility.UrlDecode(element.InnerHtml)));
-                else if (!string.IsNullOrEmpty(text) && (!element.Children.Any() || element?.Children?.Count(x => string.IsNullOrEmpty(x.Text())) / element?.Children?.Length > 0.8))
+                else if (element.LocalName == "p" || element.LocalName == "pre" || (!string.IsNullOrEmpty(text) && (!element.Children.Any() || element?.Children?.Count(x => string.IsNullOrEmpty(x.Text())) / element?.Children?.Length > 0.8)) || element.Attributes.Any(x => x?.Value?.ToLower()?.Contains("text") ?? false))
                     n.Text = Regex.Unescape(text).RemoveSpaces();
             }
             catch (Exception e)

@@ -13,6 +13,12 @@
             this.ParentKey = containerSelector;
             this.PropertyHash = propertyHash;
         }
+        public TableKey(Simhash propertyHash)
+        {
+            Name = default;
+            ParentKey = default;
+            this.PropertyHash = propertyHash;
+        }
 
         public Simhash PropertyHash { get; }
         public string Name { get; }
@@ -26,6 +32,7 @@
             simhash.GenerateSimhash(els.Keys.ToList());
             return new TableKey(key, parentSelector, simhash);
         }
+
 
         public override bool Equals(object obj)
         {
@@ -45,7 +52,10 @@
 
         public override string ToString()
         {
-            return $"{this.Name}_{this.PropertyHash.value.GetHashCode()}";
+            return this.Name;
+            //if (this.Name.Contains(">"))
+            //    return this.Name.Split(">").Last().Trim();
+            //return this.Name.Split('.').Last();
         }
     }
 }

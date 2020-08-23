@@ -14,7 +14,7 @@ const tables = new Vapi({
   .post({
     property: "tables",
     action: "addPage",
-    path: ({ link }) => `/tables/add/?link=${link}`,
+    path: ({ link }) => `/tables/add/?link=${encodeURIComponent(link)}`,
     onSuccess(state, payload, axios, { params, data }) {
       let testData = payload.data.replace(/^\"*/, "").replace(/\"*$/, "");
       console.log(testData);
