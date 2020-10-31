@@ -80,10 +80,10 @@ export default {
     border: 1px solid gray;
     margin: 4px;
     padding: 3px;
-    &:hover {
-      transition-duration: 1s;
-      border: rgb(0, 162, 236) 2px solid;
-    }
+    // &:hover {
+    //   transition-duration: 1s;
+    //   border: rgb(0, 162, 236) 2px solid;
+    // }
   }
 }
 .p-2 {
@@ -92,7 +92,6 @@ export default {
   padding: 0.2rem !important;
   &.line {
     &:hover {
-      transition-delay: 0.2s;
       transition-duration: 0.1s;
       cursor: pointer;
       background: rgb(0, 162, 236);

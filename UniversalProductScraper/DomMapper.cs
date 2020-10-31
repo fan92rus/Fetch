@@ -123,12 +123,20 @@ namespace UniversalProductScraper
                 baseTree.Add(target);
             }
 
+            if (baseTree.Children.Any(e => e.Find(x => x.Selector.Contains("coupon-store-item")) != null) && !baseTree.Item.Selector.Contains("coupon-store-item"))
+            {
+
+            }
+            else
+            {
+
+            }
             //baseTree.AddRange(parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderByDescending(e => e.Children.Count).FirstOrDefault()));
         }
 
         /// <summary>
         /// Проверка ноды на валидность
-        /// </summary>
+        /// </summar48VZXBV By>
         /// <param name="node">Нода</param>
         /// <param name="baseNode">Родительская нода</param>
         /// <returns>Валидна ли нода</returns>
@@ -154,12 +162,10 @@ namespace UniversalProductScraper
                 var count = element.QuerySelectorAll(tree?.Item?.Selector).Length;
 
                 //Если выполняеться условие то поднимаем элемент на уровень выше (проверка что он один)
-                if (tree?.Item != null && (count == 1 || tree?.Children?.Count == 1))
+                if (tree?.Item != null && (count == 1 || tree?.Children?.Count == 1) && !baseTree.Contains(tree))
                 {
                     parsedMap.Remove(tree);
-
-                    if (!baseTree.Contains(tree))
-                        baseTree.Add(tree);
+                    baseTree.Add(tree);
                 }
                 else
                 {

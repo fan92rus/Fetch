@@ -259,7 +259,8 @@
                 do
                 {
                     next = enumerator.MoveNext();
-                    if (enumerator.Current != null && !enumerator.Current.Contains("%"))
+                    var current = enumerator.Current;
+                    if (enumerator.Current != null && !current.Contains("%") && !current.Contains("["))
                         selector += "." + enumerator.Current;
                     count = parent.QuerySelectorAll(selector).Length;
                 }

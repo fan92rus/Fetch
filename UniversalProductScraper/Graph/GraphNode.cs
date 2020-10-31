@@ -25,6 +25,7 @@ namespace UniversalProductScraper.Graph
         void Add(T item);
         bool Remove(T item);
         bool Remove(ITree<T> item);
+        ITree<T> Find(Func<T, bool> func);
     }
 
     public interface ITreeBuilder<T> where T : class
@@ -90,7 +91,22 @@ namespace UniversalProductScraper.Graph
         public T Item { get; set; }
         public ITree<T> Parent { get; set; }
         public ICollection<ITree<T>> Children { get; set; }
-        public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
+        //public ITree<T> Find(Func<T, bool> item) => this.Children.FirstOrDefault(x => item.Invoke(x.Item));
+
+        public ITree<T> Find(Func<T, bool> item)
+        {
+            if (item(this))
+                return this;
+
+            foreach (var child in this.Children)
+            {
+                var founded = child.Find(item);
+                if (founded != null)
+                    return founded;
+            }
+
+            return null;
+        }
 
         private bool CheckThis(T item) => this.Item != null && this.Item.Equals(item);
         private bool CheckThis(ITree<T> tree)
