@@ -9,15 +9,15 @@
     {
         public TableKey(string name, string containerSelector, Simhash propertyHash)
         {
-            this.Name = name;
-            this.ParentKey = containerSelector;
-            this.PropertyHash = propertyHash;
+            Name = name;
+            ParentKey = containerSelector;
+            PropertyHash = propertyHash;
         }
         public TableKey(Simhash propertyHash)
         {
             Name = default;
             ParentKey = default;
-            this.PropertyHash = propertyHash;
+            PropertyHash = propertyHash;
         }
 
         public Simhash PropertyHash { get; }
@@ -34,28 +34,16 @@
         }
 
 
-        public override bool Equals(object obj)
-        {
-            return obj is TableKey other && this.Equals(other);
-        }
+        public override bool Equals(object obj) => obj is TableKey other && Equals(other);
 
         public bool Equals(TableKey other)
         {
-            var distance = this.PropertyHash.distance(other.PropertyHash);
-            return distance < EqualsDistance && other.ParentKey == this.ParentKey && string.Equals(this.Name, other.Name);
+            var distance = PropertyHash.distance(other.PropertyHash);
+            return distance < EqualsDistance && other.ParentKey == ParentKey && string.Equals(Name, other.Name);
         }
 
-        public override int GetHashCode()
-        {
-            return $"{this.Name}{this.ParentKey}{this.PropertyHash.value}".GetHashCode(StringComparison.CurrentCultureIgnoreCase);
-        }
+        public override int GetHashCode() => $"{Name}{ParentKey}{PropertyHash.value}".GetHashCode(StringComparison.CurrentCultureIgnoreCase);
 
-        public override string ToString()
-        {
-            return this.Name;
-            //if (this.Name.Contains(">"))
-            //    return this.Name.Split(">").Last().Trim();
-            //return this.Name.Split('.').Last();
-        }
+        public override string ToString() => Name;//if (this.Name.Contains(">"))//    return this.Name.Split(">").Last().Trim();//return this.Name.Split('.').Last();
     }
 }

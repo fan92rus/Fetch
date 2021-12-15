@@ -14,15 +14,9 @@
     }
     static class INodeEx
     {
-        public static bool IsText(this IElement element)
-        {
-            return !string.IsNullOrWhiteSpace(element.Text().Replace("\n", "").Replace("\t", "")) && !element.Children.Any();
-        }
+        public static bool IsText(this IElement element) => !string.IsNullOrWhiteSpace(element.Text().Replace("\n", "").Replace("\t", "")) && !element.Children.Any();
 
-        public static IElement GetNotVoidParent(this IElement element)
-        {
-            return element.GetNotVoidParent("HTML");
-        }
+        public static IElement GetNotVoidParent(this IElement element) => element.GetNotVoidParent("HTML");
         public static IElement GetNotVoidParent(this IElement element, string finalTag)
         {
 
@@ -63,14 +57,11 @@
             return parent;
         }
 
-        public static List<IElement> GetAllChildren(this IElement element)
-        {
-            return GetAllChildren(element, -1);
-        }
+        public static List<IElement> GetAllChildren(this IElement element) => GetAllChildren(element, -1);
 
         public static List<IElement> GetAllChildren(this IElement element, int level)
         {
-            List<IElement> elements = new List<IElement>();
+            var elements = new List<IElement>();
 
             if (level > 0 || level == -1)
                 foreach (var ch in element.Children) elements.AddRange(GetAllChildren(ch, level));
@@ -82,10 +73,7 @@
             return elements;
         }
 
-        public static IEnumerable<IElement> ExtractValueElements(this IElement doc)
-        {
-            return ExtractValueElements(doc, -1);
-        }
+        public static IEnumerable<IElement> ExtractValueElements(this IElement doc) => ExtractValueElements(doc, -1);
         public static IEnumerable<IElement> ExtractValueElements(this IElement doc, int level)
         {
             var target = new List<IElement>();
@@ -96,14 +84,8 @@
             return els;
         }
 
-        public static IElement GetContainer(this IElement element)
-        {
-            return GetContainer(element, 2, "HTML");
-        }
-        public static IElement GetContainer(this IElement element, string final)
-        {
-            return GetContainer(element, 2, final);
-        }
+        public static IElement GetContainer(this IElement element) => GetContainer(element, 2, "HTML");
+        public static IElement GetContainer(this IElement element, string final) => GetContainer(element, 2, final);
         public static IElement GetContainer(this IElement element, int layer, string finalElementTag)
         {
             var final = element;
@@ -138,25 +120,13 @@
             return parent;
         }
 
-        public static string GetSelector(this IElement element)
-        {
-            return GetSelector(element, null, SelectorType.Universal, null);
-        }
+        public static string GetSelector(this IElement element) => GetSelector(element, null, SelectorType.Universal, null);
 
-        public static string GetSelector(this IElement element, SelectorType type)
-        {
-            return GetSelector(element, null, type, null);
-        }
+        public static string GetSelector(this IElement element, SelectorType type) => GetSelector(element, null, type, null);
 
-        public static string GetSelector(this IElement element, string maxSelector)
-        {
-            return GetSelector(element, maxSelector, SelectorType.Universal, null);
-        }
+        public static string GetSelector(this IElement element, string maxSelector) => GetSelector(element, maxSelector, SelectorType.Universal, null);
 
-        public static string GetSelector(this IElement element, SelectorType type, IElement maxElement)
-        {
-            return GetSelector(element, "html", type, maxElement);
-        }
+        public static string GetSelector(this IElement element, SelectorType type, IElement maxElement) => GetSelector(element, "html", type, maxElement);
 
         public static string GetSelector(this IElement element, string maxSelector, SelectorType type, IElement checkElement)
         {
@@ -222,7 +192,7 @@
             var parent = element.ParentElement ?? element;
             var classes = element.ClassList.Select(x => Regex.Replace(x.Trim(), ":.+", ""));
 
-            string selector = Regex.Replace(element.LocalName, ":.+", "");
+            var selector = Regex.Replace(element.LocalName, ":.+", "");
 
             var enumerator = classes.GetEnumerator();
 

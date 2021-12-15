@@ -6,15 +6,11 @@ namespace UniversalProductScraper
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using System.Web;
-
-    using AngleSharp;
     using AngleSharp.Dom;
     using AngleSharp.Html.Dom;
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
-    using Node = Models.Node;
 
 
     internal interface IScraper
@@ -28,7 +24,7 @@ namespace UniversalProductScraper
         public ITreeBuilder<BaseNode> TreeBuilder { get; set; }
         public ITree<BaseNode> ScrapNode(ITree<InfoNode> info)
         {
-            ITree<BaseNode> tree = this.TreeBuilder.Create(this.SetNode(info.Item));
+            var tree = TreeBuilder.Create(SetNode(info.Item));
 
             foreach (var child in info.Children)
             {
@@ -38,7 +34,7 @@ namespace UniversalProductScraper
 
                     foreach (var c in childrenAll)
                     {
-                        var element = this.ScrapNode(new Tree<InfoNode>(child)
+                        var element = ScrapNode(new Tree<InfoNode>(child)
                         {
                             Item = new InfoNode(child.Item)
                             {
@@ -57,7 +53,7 @@ namespace UniversalProductScraper
 
                 foreach (var element in children)
                 {
-                    var el = this.SetNode(child.Item, element);
+                    var el = SetNode(child.Item, element);
                     if (el?.Text != null || (el?.Attributes?.Any() ?? false) && tree.Children.All(e => e.Item.Selector != el.Selector))
                         tree.Add(el);
                 }
@@ -69,7 +65,7 @@ namespace UniversalProductScraper
             return null;
         }
 
-        public BaseNode SetNode(InfoNode child) => this.SetNode(child, child.Element);
+        public BaseNode SetNode(InfoNode child) => SetNode(child, child.Element);
 
         private BaseNode SetNode(InfoNode child, IElement element)
         {
@@ -102,7 +98,7 @@ namespace UniversalProductScraper
             return n;
         }
 
-        private bool CheckTextElements(IElement x) => (x.NodeType == NodeType.Text || this.CheckFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces());
+        private bool CheckTextElements(IElement x) => (x.NodeType == NodeType.Text || CheckFlags((int)x.Flags)) && !string.IsNullOrEmpty(x.TextContent.RemoveSpaces());
 
         private bool CheckFlags(int flag) => flag <= 280 && flag >= 250 || flag >= 306 && flag <= 340 || (flag >= 2304 && flag <= 2340);
     }

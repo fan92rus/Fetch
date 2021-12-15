@@ -1,5 +1,4 @@
-﻿using ServiceStack;
-using SimhashLib;
+﻿using SimhashLib;
 using Unity;
 
 namespace UniversalProductScraper
@@ -10,7 +9,6 @@ namespace UniversalProductScraper
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
 
     using MoreLinq;
 
@@ -38,10 +36,10 @@ namespace UniversalProductScraper
             var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = DomNodeType.Container };
 
             var finalNode = TreeBuilder.Create(root);
-            finalNode.Add(this.ParseElementMap(doc.QuerySelector("head")));
-            finalNode.Add(this.ParseElementMap(doc.QuerySelector("body")));
+            finalNode.Add(ParseElementMap(doc.QuerySelector("head")));
+            finalNode.Add(ParseElementMap(doc.QuerySelector("body")));
 
-            this.DefineTypes(finalNode);
+            DefineTypes(finalNode);
             return finalNode;
         }
 
@@ -56,7 +54,7 @@ namespace UniversalProductScraper
                 infoNode.Item.Type = DomNodeType.Container;
 
                 foreach (var subNode in infoNode.Children)
-                    this.DefineTypes(subNode);
+                    DefineTypes(subNode);
             }
             else
             {
@@ -74,11 +72,11 @@ namespace UniversalProductScraper
             }
         }
 
-        public ITree<InfoNode> ParseElementMap(IElement element) => this.ParseElementMap(element, null);
+        public ITree<InfoNode> ParseElementMap(IElement element) => ParseElementMap(element, null);
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
-            var baseTree = this.TreeBuilder.Create(new InfoNode(element), parent);
-            this.ParseChildren(element, baseTree);
+            var baseTree = TreeBuilder.Create(new InfoNode(element), parent);
+            ParseChildren(element, baseTree);
             return baseTree;
         }
 
@@ -95,13 +93,13 @@ namespace UniversalProductScraper
 
             }
 
-            var parsedChildren = element.Children.Select(x => this.ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).ToList();
+            var parsedChildren = element.Children.Select(x => ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).ToList();
 
             var parsedTrees = TreeBuilder.Create();
 
             foreach (var child in parsedChildren)
             {
-                this.MoveItems(child, element, baseTree);
+                MoveItems(child, element, baseTree);
                 //if (!parsedTrees.Contains(child))
                 parsedTrees.Add(child);
             }
@@ -112,7 +110,7 @@ namespace UniversalProductScraper
             var groupingTrees = test.Select(tree => tree.Select(x =>
             {
                 var childrenHashes = x.Children.Select(ch => ch.Item.Selector).Concat(new List<string>() { x.Item.Selector }).ToList();
-                Simhash simhash = new Simhash();
+                var simhash = new Simhash();
                 simhash.GenerateSimhash(childrenHashes);
                 return new { target = x, Key = simhash };
             }).GroupBy(x => x.Key, new HashComparer(10)));
@@ -140,8 +138,8 @@ namespace UniversalProductScraper
         /// <param name="node">Нода</param>
         /// <param name="baseNode">Родительская нода</param>
         /// <returns>Валидна ли нода</returns>
-        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => (baseNode == null || !baseNode.Contains(node)) && this.ValidateNode(node);
-        private bool ValidateNode(ITree<InfoNode> node) => this.CheckRules.Any(x => x.Invoke(node));
+        private bool ValidateNode(ITree<InfoNode> node, ITree<InfoNode> baseNode) => (baseNode == null || !baseNode.Contains(node)) && ValidateNode(node);
+        private bool ValidateNode(ITree<InfoNode> node) => CheckRules.Any(x => x.Invoke(node));
 
         /// <summary>
         /// Перемещение одиночных дочерних нод на уровень выше
@@ -187,15 +185,9 @@ namespace UniversalProductScraper
         {
             Distance = distance;
         }
-        public bool Equals(Simhash a, Simhash b)
-        {
-            return a.distance(b) < Distance;
-        }
+        public bool Equals(Simhash a, Simhash b) => a.distance(b) < Distance;
 
-        public int GetHashCode(Simhash hash)
-        {
-            return hash.value.GetHashCode();
-        }
+        public int GetHashCode(Simhash hash) => hash.value.GetHashCode();
     }
     public struct SimhashKey : IEquatable<SimhashKey>
     {
@@ -203,7 +195,7 @@ namespace UniversalProductScraper
         public int Distance { get; }
         public SimhashKey(Simhash hash, int distance)
         {
-            this.Distance = distance;
+            Distance = distance;
             Hash = hash;
         }
 
@@ -211,17 +203,11 @@ namespace UniversalProductScraper
         public bool Equals(SimhashKey other)
         {
             var avg = new List<int>() { Distance, other.Distance }.Average();
-            return this.Hash.distance(other.Hash) < avg;
+            return Hash.distance(other.Hash) < avg;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is SimhashKey other && this.Equals(other);
-        }
+        public override bool Equals(object obj) => obj is SimhashKey other && Equals(other);
 
-        public override int GetHashCode()
-        {
-            return (Hash != null ? Hash.GetHashCode() : 0);
-        }
+        public override int GetHashCode() => (Hash != null ? Hash.GetHashCode() : 0);
     }
 }

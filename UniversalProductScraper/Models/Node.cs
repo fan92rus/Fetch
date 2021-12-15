@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     using Newtonsoft.Json;
 
@@ -13,7 +12,7 @@
     {
         public Node()
         {
-            this.Attributes = new List<KeyValuePair<string, string>>();
+            Attributes = new List<KeyValuePair<string, string>>();
             //this.Classes = new List<string>();
         }
 
@@ -22,20 +21,20 @@
         [JsonIgnore]
         public Node ParentNode { get; set; }
 
-        public List<Node> FindAll(Func<Node, bool> compare) => this.FindAll(compare, this);
+        public List<Node> FindAll(Func<Node, bool> compare) => FindAll(compare, this);
 
         public List<Node> FindAll(Func<Node, bool> compare, Node node)
         {
             try
             {
-                List<Node> result = new List<Node>();
+                var result = new List<Node>();
 
-                if (this.Check(compare, node))
+                if (Check(compare, node))
                     result.Add(node);
                 if (node.Nodes != null)
                     foreach (var childNode in node.Nodes)
                     {
-                        var res = this.FindAll(compare, childNode);
+                        var res = FindAll(compare, childNode);
                         if (res != null)
                             result.AddRange(res);
                     }

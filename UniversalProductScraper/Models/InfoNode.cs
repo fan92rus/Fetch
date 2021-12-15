@@ -1,7 +1,6 @@
 ﻿namespace UniversalProductScraper.Models
 {
     using System;
-    using System.Collections.Generic;
 
     using AngleSharp.Dom;
 
@@ -27,15 +26,15 @@
 
         public InfoNode(InfoNode node)
         {
-            this.Selector = node.Selector;
-            this.Type = node.Type;
-            this.Element = node.Element;
+            Selector = node.Selector;
+            Type = node.Type;
+            Element = node.Element;
         }
 
         public InfoNode(IElement element)
         {
-            this.Element = element;
-            this.Selector = element.ParentElement != null
+            Element = element;
+            Selector = element.ParentElement != null
                            ? element.GetSelector((element.ParentElement).GetSelector())
                            : element.GetSelector();
         }
@@ -52,21 +51,21 @@
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            var equals = string.Equals(this.Selector, other.Selector) && this.Type == other.Type;
+            var equals = string.Equals(Selector, other.Selector) && Type == other.Type;
             return equals;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((InfoNode)obj);
+            if (obj.GetType() != GetType()) return false;
+            return Equals((InfoNode)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((this.Selector != null ? this.Selector.GetHashCode() : 0) * 397) ^ (int)this.Type;
+                return ((Selector != null ? Selector.GetHashCode() : 0) * 397) ^ (int)Type;
             }
         }
     }

@@ -17,14 +17,14 @@
         public static string CreateMD5(string input)
         {
             // Use input string to calculate MD5 hash
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using (var md5 = System.Security.Cryptography.MD5.Create())
             {
-                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
+                var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+                var hashBytes = md5.ComputeHash(inputBytes);
 
                 // Convert the byte array to hexadecimal string
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++)
+                var sb = new StringBuilder();
+                for (var i = 0; i < hashBytes.Length; i++)
                 {
                     sb.Append(hashBytes[i].ToString("X2"));
                 }
@@ -32,7 +32,7 @@
             }
         }
 
-        private static Random random = new Random();
+        private static readonly Random random = new Random();
 
         /// <summary>
         /// Получение случайной строки с использованием Random
@@ -55,7 +55,7 @@
         {
             if (string.IsNullOrEmpty(input))
                 return input;
-            Regex remover = new Regex("(?![\u0000-\u00FF]|[\u20A0-\u20CF])(.)");
+            var remover = new Regex("(?![\u0000-\u00FF]|[\u20A0-\u20CF])(.)");
             return remover.Replace(input, "");
         }
 

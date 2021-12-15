@@ -1,11 +1,12 @@
-﻿namespace UniversalProductScraper.Loaders
+﻿using Extensions.RestSharp;
+
+namespace UniversalProductScraper.Loaders
 {
     using System;
     using System.Net;
     using AngleSharp;
     using AngleSharp.Html.Dom;
     using AngleSharp.Html.Parser;
-    using Extentions.RestSharp;
     using Polly;
     using Polly.Retry;
     using RestSharp;
@@ -14,7 +15,7 @@
     {
         public RequestWebLoader()
         {
-            this.Policy = Polly.Policy
+            Policy = Polly.Policy
                 .HandleResult<IRestResponse>(
                     (response) => (response.StatusCode == 0 || response.StatusCode == HttpStatusCode.TooManyRequests)
                                   && response.ResponseStatus != ResponseStatus.TimedOut).WaitAndRetry(
@@ -26,15 +27,15 @@
         public virtual string GetPageContent(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);
-            
+
             if (!isCreate)
                 throw new ArgumentException("uri is invalid");
-            
+
             var rc = new RestClient();
             var req = new RestRequest(target);
             req.AddHeader("Content-Type", "url/html; charset=utf-8");
-            var resp = rc.ExecuteWitHeaders(req, this.Policy);
-            
+            var resp = rc.ExecuteWitHeaders(req, Policy);
+
             return resp.Content;
         }
 
@@ -44,14 +45,9 @@
             var config = Configuration.Default.WithDefaultLoader().WithCss();
             var context = BrowsingContext.New(config);
             var parser = context.GetService<IHtmlParser>();
-            var doc = parser.ParseDocument(text);
-
-            return doc;
+            return parser.ParseDocument(text);
         }
 
-        public IHtmlDocument GetPage(string url)
-        {
-            return LoadPageFromString(GetPageContent(url));
-        }
+        public IHtmlDocument GetPage(string url) => LoadPageFromString(GetPageContent(url));
     }
 }

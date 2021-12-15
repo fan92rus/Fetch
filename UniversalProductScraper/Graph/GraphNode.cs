@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace UniversalProductScraper.Graph
 {
@@ -46,37 +45,45 @@ namespace UniversalProductScraper.Graph
 
     class Tree<T> : ITree<T> where T : class
     {
-        public Tree() => this.Children = new List<ITree<T>>();
-        public Tree(T root) : this() => this.Item = root;
+        public Tree()
+        {
+            Children = new List<ITree<T>>();
+        }
+
+        public Tree(T root) : this()
+        {
+            Item = root;
+        }
+
         public Tree(T root, ITree<T> parent) : this(root)
         {
-            if (parent != this) this.Parent = parent;
+            if (parent != this) Parent = parent;
         }
         public Tree(ITree<T> @base)
         {
-            this.Children = @base.Children;
-            this.Item = @base.Item;
-            this.Parent = @base.Parent;
+            Children = @base.Children;
+            Item = @base.Item;
+            Parent = @base.Parent;
         }
 
-        public void Add(ITree<T> item) => this.Children?.Add(item);
+        public void Add(ITree<T> item) => Children?.Add(item);
 
         public void AddRange(IEnumerable<ITree<T>> items)
         {
-            foreach (var item in items) this.Add(item);
+            foreach (var item in items) Add(item);
         }
 
-        public void Add(T item) => this.Children?.Add(new Tree<T>(item, this));
+        public void Add(T item) => Children?.Add(new Tree<T>(item, this));
 
         public bool Remove(T item)
         {
-            var isRemoved = item == this.Item && this.Parent != null && this.Parent.Remove((ITree<T>)this);
+            var isRemoved = item == Item && Parent != null && Parent.Remove((ITree<T>)this);
             if (isRemoved) return true;
 
-            var target = this.Children.FirstOrDefault(x => x.Item == item);
+            var target = Children.FirstOrDefault(x => x.Item == item);
             if (target != null)
             {
-                isRemoved = this.Children.Remove(target);
+                isRemoved = Children.Remove(target);
             }
 
             return isRemoved;
@@ -84,8 +91,8 @@ namespace UniversalProductScraper.Graph
 
         public bool Remove(ITree<T> item)
         {
-            var target = this.Children.FirstOrDefault(x => x == item);
-            return this.Children.Remove(target);
+            var target = Children.FirstOrDefault(x => x == item);
+            return Children.Remove(target);
         }
 
         public T Item { get; set; }
@@ -98,7 +105,7 @@ namespace UniversalProductScraper.Graph
             if (item(this))
                 return this;
 
-            foreach (var child in this.Children)
+            foreach (var child in Children)
             {
                 var founded = child.Find(item);
                 if (founded != null)
@@ -108,36 +115,36 @@ namespace UniversalProductScraper.Graph
             return null;
         }
 
-        private bool CheckThis(T item) => this.Item != null && this.Item.Equals(item);
+        private bool CheckThis(T item) => Item != null && Item.Equals(item);
         private bool CheckThis(ITree<T> tree)
         {
-            var equalThis = this.CheckThis(tree.Item);
+            var equalThis = CheckThis(tree.Item);
             //var equalsChildren = tree.Children.All(x => this.Children.Any(e => e == x));
-            var nonEqualChildren = !tree.Children.Select(x => x.Item).Except(this.Children.Select(x => x.Item)).Any();
+            var nonEqualChildren = !tree.Children.Select(x => x.Item).Except(Children.Select(x => x.Item)).Any();
             return equalThis && nonEqualChildren;
         }
 
-        public bool Contains(Func<T, bool> func) => (this.Item != null && func.Invoke(this?.Item)) || (this.Children != null && this.Children.Any(x => x.Contains(func)));
-        public bool Contains(T item) => this.CheckThis((T)item) || (this.Children != null && this.Children.Any(x => x.Contains(item)));
-        public bool Contains(ITree<T> item) => this.CheckThis(item) || this.Children.Any(x => x.Contains(item));
+        public bool Contains(Func<T, bool> func) => (Item != null && func.Invoke(this?.Item)) || (Children != null && Children.Any(x => x.Contains(func)));
+        public bool Contains(T item) => CheckThis(item) || (Children != null && Children.Any(x => x.Contains(item)));
+        public bool Contains(ITree<T> item) => CheckThis(item) || Children.Any(x => x.Contains(item));
 
         public IEnumerable<T> GetCollection()
         {
-            var list = new List<T> { this.Item };
+            var list = new List<T> { Item };
 
-            list.AddRange(this.Children.SelectMany(child => child.GetCollection()));
+            list.AddRange(Children.SelectMany(child => child.GetCollection()));
 
             return list;
         }
 
         public static implicit operator T(Tree<T> tree) => tree.Item;
-        protected bool Equals(ITree<T> other) => EqualityComparer<T>.Default.Equals(this.Item, other.Item) && Equals(this.Children, other.Children);
+        protected bool Equals(ITree<T> other) => EqualityComparer<T>.Default.Equals(Item, other.Item) && Equals(Children, other.Children);
         public bool Equals(T obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return this.Equals((ITree<T>)obj);
+            if (obj.GetType() != GetType()) return false;
+            return Equals((ITree<T>)obj);
         }
 
 
@@ -145,7 +152,7 @@ namespace UniversalProductScraper.Graph
         {
             unchecked
             {
-                return (EqualityComparer<T>.Default.GetHashCode(this.Item) * 397) ^ (this.Children != null ? this.Children.GetHashCode() : 0);
+                return (EqualityComparer<T>.Default.GetHashCode(Item) * 397) ^ (Children != null ? Children.GetHashCode() : 0);
             }
         }
     }
@@ -157,7 +164,7 @@ namespace UniversalProductScraper.Graph
         {
             yield return this;
 
-            foreach (Tree<T> child in this.Children)
+            foreach (Tree<T> child in Children)
             {
                 var enumerator = (child as EnumerableTree<T>).GetEnumerator();
 
@@ -168,10 +175,7 @@ namespace UniversalProductScraper.Graph
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
     public class BaseNode : IEquatable<BaseNode>
     {
@@ -180,31 +184,28 @@ namespace UniversalProductScraper.Graph
         public List<KeyValuePair<string, string>> Attributes { get; set; }
         public string Text { get; set; }
 
-        string Clear(string @base)
-        {
-            return @base.Replace("-", "_").Replace(".", "_").Replace("[", "").Replace("]", "");
-        }
+        string Clear(string @base) => @base.Replace("-", "_").Replace(".", "_").Replace("[", "").Replace("]", "");
 
         public Dictionary<string, string> GetProperties()
         {
-            Dictionary<string, string> dList = new Dictionary<string, string>();
+            var dList = new Dictionary<string, string>();
 
-            foreach (var el in this.Attributes)
+            foreach (var el in Attributes)
             {
-                var key = this.Clear(el.Key);
+                var key = Clear(el.Key);
                 if (!dList.ContainsKey(key) && !string.IsNullOrWhiteSpace(el.Value))
                     dList.Add(key, el.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(this.Text))
-                dList.Add(this.Clear(this.Selector), this.Text);
+            if (!string.IsNullOrWhiteSpace(Text))
+                dList.Add(Clear(Selector), Text);
 
             return dList;
         }
 
         public bool Equals(BaseNode other)
         {
-            bool equals = this.Type == other.Type && this.Selector == other.Selector && ((this.Text != null && other.Text != null && this.Text.Equals(other.Text, StringComparison.InvariantCultureIgnoreCase)) || this.Text == other.Text) && !this.Attributes.Except(other.Attributes).Any();
+            var equals = Type == other.Type && Selector == other.Selector && ((Text != null && other.Text != null && Text.Equals(other.Text, StringComparison.InvariantCultureIgnoreCase)) || Text == other.Text) && !Attributes.Except(other.Attributes).Any();
             return equals;
         }
 
@@ -212,7 +213,7 @@ namespace UniversalProductScraper.Graph
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((BaseNode)obj);
         }
 
@@ -220,10 +221,10 @@ namespace UniversalProductScraper.Graph
         {
             unchecked
             {
-                var hashCode = (int)this.Type;
-                hashCode = (hashCode * 397) ^ (this.Selector != null ? this.Selector.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (this.Attributes != null ? this.Attributes.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (this.Text != null ? this.Text.GetHashCode() : 0);
+                var hashCode = (int)Type;
+                hashCode = (hashCode * 397) ^ (Selector != null ? Selector.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Attributes != null ? Attributes.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Text != null ? Text.GetHashCode() : 0);
                 return hashCode;
             }
         }

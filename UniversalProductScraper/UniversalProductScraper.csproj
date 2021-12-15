@@ -23,15 +23,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\simhash-csharp\src\Simhash\SimhashLib\SimhashLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Polly">
       <HintPath>..\..\Scraper-Vouchers\Extentions\bin\Debug\Polly.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp.Polly.Extensions.Core">
       <HintPath>..\..\Scraper-Vouchers\RestSharp.PollyExtensions.Core\bin\Debug\netcoreapp3.1\RestSharp.Polly.Extensions.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Simhash.Core">
-      <HintPath>..\..\simhash-csharp\src\Simhash\Simhash.Core\bin\Debug\netcoreapp3.1\Simhash.Core.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="chromedriver.exe">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,34 +1,27 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using SimhashLib;
+﻿using SimhashLib;
 using UniversalProductScraper.Models;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
+using UniversalProductScraper.Graph;
+using UniversalProductScraper.Loaders;
 
 namespace UniversalProductScraper
 {
-    using System.Collections.Generic;
-    using System.Dynamic;
-    using System.IO;
-    using System.Linq;
-
-    using Newtonsoft.Json;
-
-    using Unity;
-
-    using UniversalProductScraper.Graph;
-    using UniversalProductScraper.Loaders;
-
     public class SortedBaseNodeTree
     {
         public SortedBaseNodeTree(ITree<BaseNode> tree, Dictionary<string, string> properties)
         {
-            this.Properties = properties;
-            this.Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, this.Properties);
-            this.Tree = tree;
+            Properties = properties;
+            Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, Properties);
+            Tree = tree;
         }
 
         public SortedBaseNodeTree(ITree<BaseNode> tree)
         {
-            this.Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, tree?.Item?.GetProperties());
-            this.Tree = tree;
+            Key = TableKey.Create(tree?.Parent?.Item?.Selector, tree?.Item?.Selector, tree?.Item?.GetProperties());
+            Tree = tree;
         }
         public Dictionary<string, string> Properties { get; set; }
         public ITree<BaseNode> Tree { get; set; }
@@ -39,14 +32,14 @@ namespace UniversalProductScraper
 
     class ScrapingService
     {
-        private static IDictionary<Simhash, ITree<InfoNode>> maps = new Dictionary<Simhash, ITree<InfoNode>>();
+        private static readonly IDictionary<Simhash, ITree<InfoNode>> maps = new Dictionary<Simhash, ITree<InfoNode>>();
 
         public ScrapingService(ITreeConverter converter, IWebLoader webLoader, IDomMapper domMapper, IScraper scraper)
         {
-            this.Converter = converter;
-            this.Mapper = domMapper;
-            this.WebLoader = webLoader;
-            this.Scraper = scraper;
+            Converter = converter;
+            Mapper = domMapper;
+            WebLoader = webLoader;
+            Scraper = scraper;
         }
 
         private ITreeConverter Converter { get; }
@@ -54,9 +47,9 @@ namespace UniversalProductScraper
         private IDomMapper Mapper { get; }
         private IScraper Scraper { get; }
 
-        public IDictionary<string, object> ScrapPage(string url)
+        public ITree<BaseNode> ScrapPage(string url)
         {
-            var doc = this.WebLoader.GetPage(url);
+            var doc = WebLoader.GetPage(url);
 
             var hash = new Simhash(Simhash.HashingType.Jenkins);
             hash.GenerateSimhash(doc.Head.InnerHtml);
@@ -78,14 +71,7 @@ namespace UniversalProductScraper
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             }));
 
-            var data = Scraper.ScrapNode(documentMap);
-            var objects = this.Converter.Convert(data);
-
-            File.WriteAllText("data\\res.json", JsonConvert.SerializeObject(objects, Formatting.Indented, new JsonSerializerSettings()
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            }));
-            return objects;
+            return Scraper.ScrapNode(documentMap);
         }
     }
 }

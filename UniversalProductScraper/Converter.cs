@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace UniversalProductScraper
+﻿namespace UniversalProductScraper
 {
     using System.Collections.Generic;
     using System.Dynamic;
@@ -22,8 +20,8 @@ namespace UniversalProductScraper
             var fullChildren = tree.Children.Where(x => x.Children.Any());
             var voidChildren = tree.Children.Where(x => !x.Children.Any());
 
-            target.AddRange(this.FullChildrenProcessing(fullChildren));
-            target.AddRange(this.VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
+            target.AddRange(FullChildrenProcessing(fullChildren));
+            target.AddRange(VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
 
             foreach (var (key, value) in tree.Item.GetProperties())
             {
@@ -63,7 +61,7 @@ namespace UniversalProductScraper
 
             foreach (var group in subElements.GroupBy(x => x.Item.Selector))
             {
-                var objects = @group.Select(this.Convert).Where(x => x.Values.Any()).ToList();
+                var objects = @group.Select(Convert).Where(x => x.Values.Any()).ToList();
 
                 var key = group.Key;// GetKey();
 
