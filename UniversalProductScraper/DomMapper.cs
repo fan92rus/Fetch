@@ -14,6 +14,7 @@ namespace UniversalProductScraper
 
     using UniversalProductScraper.Graph;
     using UniversalProductScraper.Models;
+    using System.Net.Http.Headers;
 
     internal interface IDomMapper
     {
@@ -59,20 +60,28 @@ namespace UniversalProductScraper
             else
             {
                 var element = infoNode?.Item?.Element;
-                var urlExpr = "(https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|www\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\.[^\\s]{2,}|https?:\\/\\/(?:www\\.|(?!www))[a-zA-Z0-9]+\\.[^\\s]{2,}|www\\.[a-zA-Z0-9]+\\.[^\\s]{2,})";
 
-                if (element is IHtmlImageElement)
-                    infoNode.Item.Type = DomNodeType.Image;
-                else if (element is IHtmlAnchorElement || element.Attributes.Any(a => Regex.IsMatch(a.Value, urlExpr)))
-                    infoNode.Item.Type = DomNodeType.Link;
-                else if (element is IHtmlButtonElement)
-                    infoNode.Item.Type = DomNodeType.Button;
-                else
-                    infoNode.Item.Type = DomNodeType.Text;
+                // Вынести метод DefineType и просто 
+                infoNode.Item.Type = DefineType(element);
             }
         }
 
+        static Regex UrlRegex = new Regex("\"(https?:\\\\/\\\\/(?:www\\\\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\\\.[^\\\\s]{2,}|www\\\\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\\\\.[^\\\\s]{2,}|https?:\\\\/\\\\/(?:www\\\\.|(?!www))[a-zA-Z0-9]+\\\\.[^\\\\s]{2,}|www\\\\.[a-zA-Z0-9]+\\\\.[^\\\\s]{2,})\"", RegexOptions.Compiled);
+
+        private static DomNodeType DefineType(IElement element)
+        {
+            if (element is IHtmlImageElement)
+                return DomNodeType.Image;
+            else if (element is IHtmlAnchorElement || element.Attributes.Any(a => UrlRegex.IsMatch(a.Value)))
+                return DomNodeType.Link;
+            else if (element is IHtmlButtonElement)
+                return DomNodeType.Button;
+            else
+                return DomNodeType.Text;
+        }
+
         public ITree<InfoNode> ParseElementMap(IElement element) => ParseElementMap(element, null);
+
         public ITree<InfoNode> ParseElementMap(IElement element, ITree<InfoNode> parent)
         {
             var baseTree = TreeBuilder.Create(new InfoNode(element), parent);
@@ -88,11 +97,6 @@ namespace UniversalProductScraper
         /// <returns>Очищенные дочерние ноды</returns>
         private void ParseChildren(IElement element, ITree<InfoNode> baseTree)
         {
-            if (element.Children.Any(x => x?.ClassName == "coupon-store-item"))
-            {
-
-            }
-
             var parsedChildren = element.Children.Select(x => ParseElementMap(x, baseTree)).Where(parsedMap => parsedMap != null).ToList();
 
             var parsedTrees = TreeBuilder.Create();
@@ -100,7 +104,6 @@ namespace UniversalProductScraper
             foreach (var child in parsedChildren)
             {
                 MoveItems(child, element, baseTree);
-                //if (!parsedTrees.Contains(child))
                 parsedTrees.Add(child);
             }
 
@@ -120,21 +123,11 @@ namespace UniversalProductScraper
                 var target = treeGroup.FirstOrDefault()?.OrderByDescending(x => x?.target?.Children?.Count)?.FirstOrDefault()?.target;
                 baseTree.Add(target);
             }
-
-            if (baseTree.Children.Any(e => e.Find(x => x.Selector.Contains("coupon-store-item")) != null) && !baseTree.Item.Selector.Contains("coupon-store-item"))
-            {
-
-            }
-            else
-            {
-
-            }
-            //baseTree.AddRange(parsedTrees.Children.GroupBy(x => x.Item).Select(x => x.OrderByDescending(e => e.Children.Count).FirstOrDefault()));
         }
 
         /// <summary>
         /// Проверка ноды на валидность
-        /// </summar48VZXBV By>
+        /// </summary>
         /// <param name="node">Нода</param>
         /// <param name="baseNode">Родительская нода</param>
         /// <returns>Валидна ли нода</returns>

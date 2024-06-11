@@ -1,15 +1,18 @@
 ﻿namespace UniversalProductScraper.Extensions
 {
     using System.Collections.Generic;
-    using System.Dynamic;
 
     public static class DictionaryEx
     {
-        public static IDictionary<string, object> ToExpandoObject(this IDictionary<string, string> dictionary)
+        public static void AddRangeIgnoreExist(this IDictionary<string, object> target, IDictionary<string, object> elements)
         {
-            IDictionary<string, object> target = new ExpandoObject();
-            foreach (var element in dictionary) target.Add(element.Key, element.Value);
-            return target;
+            foreach (var element in elements)
+            {
+                if (!target.ContainsKey(element.Key))
+                {
+                    target.Add(element.Key, element.Value);
+                }
+            }
         }
     }
 }

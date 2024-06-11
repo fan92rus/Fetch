@@ -1,21 +1,17 @@
 ﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Firefox;
 using UniversalProductScraper.Graph;
-using UniversalProductScraper.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EmbedIO;
+using EmbedIO.Routing;
+using EmbedIO.WebApi;
+using Newtonsoft.Json;
+using Unity;
+using UniversalProductScraper.Loaders;
 
 namespace UniversalProductScraper
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using EmbedIO;
-    using EmbedIO.Routing;
-    using EmbedIO.WebApi;
-    using Newtonsoft.Json;
-    using Unity;
-    using UniversalProductScraper.Loaders;
-
     static class DI
     {
         public static IUnityContainer Container { get; }
@@ -24,7 +20,7 @@ namespace UniversalProductScraper
             Container = new UnityContainer();
             Container.RegisterType<IDomMapper, DomMapper>();
             Container.RegisterType<IScraper, Scraper>();
-            Container.RegisterType<ITreeConverter, TreeConverter>();
+            Container.RegisterType<ITreeConverter, TreeDictionaryConverter>();
             Container.RegisterInstance<IWebDriver>(new FirefoxDriver());
             Container.RegisterType<IWebLoader, SeleniumLoader>();
             Container.RegisterType(typeof(ITreeBuilder<>), typeof(TreeBuilder<>));
@@ -45,23 +41,11 @@ namespace UniversalProductScraper
 
     class TableResource : WebApiController
     {
+        // Тут стандартный Microsoft DI юзать
+
         private readonly ScrapingService scrapingService = DI.Container.Resolve<ScrapingService>();
 
-        [Route(HttpVerbs.Post, "/tables/add/")]
+        [Route(HttpVerbs.Post, "/parse/test")]
         public string AddLink([QueryField] string link) => JsonConvert.SerializeObject(scrapingService.ScrapPage(link));
-    }
-
-    class DataStructure
-    {
-        public DataStructure(string property)
-        {
-            Property = property;
-        }
-
-        public DataStructure()
-        { }
-
-        public string Property { get; set; }
-        public ICollection<DataStructure> Children { get; set; }
     }
 }

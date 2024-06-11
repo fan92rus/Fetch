@@ -1,18 +1,17 @@
 ﻿using Unity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Web;
+using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using UniversalProductScraper.Graph;
+using UniversalProductScraper.Models;
+using UniversalProductScraper.Extensions;
 
 namespace UniversalProductScraper
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-    using System.Web;
-    using AngleSharp.Dom;
-    using AngleSharp.Html.Dom;
-    using UniversalProductScraper.Graph;
-    using UniversalProductScraper.Models;
-
-
     internal interface IScraper
     {
         ITree<BaseNode> ScrapNode(ITree<InfoNode> info);
@@ -76,6 +75,7 @@ namespace UniversalProductScraper
                                     .Select(x => new KeyValuePair<string, string>(x.Name, x.Value)).ToList(),
                 Type = child.Type,
             };
+
             Console.WriteLine("SCRAP  - " + n.Selector);
 
             var flags = (int)child.Element.Flags;

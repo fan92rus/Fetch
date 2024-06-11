@@ -1,11 +1,10 @@
 ﻿namespace UniversalProductScraper.Models
 {
     using System;
-
     using AngleSharp.Dom;
-
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
+    using UniversalProductScraper.Extensions;
 
     public enum DomNodeType
     {
@@ -21,7 +20,6 @@
     {
         public InfoNode()
         {
-
         }
 
         public InfoNode(InfoNode node)
@@ -61,12 +59,6 @@
             return Equals((InfoNode)obj);
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Selector != null ? Selector.GetHashCode() : 0) * 397) ^ (int)Type;
-            }
-        }
+        public override int GetHashCode() => HashCode.Combine(Selector, Type);
     }
 }

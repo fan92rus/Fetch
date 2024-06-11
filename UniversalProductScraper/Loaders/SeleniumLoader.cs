@@ -37,6 +37,5 @@ namespace UniversalProductScraper.Loaders
         }
 
         public IHtmlDocument GetPage(string url) => LoadPageFromString(GetPageContent(url));
-
     }
 }

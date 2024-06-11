@@ -11,7 +11,7 @@
         IDictionary<string, object> Convert(ITree<BaseNode> tree);
     }
 
-    class TreeConverter : ITreeConverter
+    class TreeDictionaryConverter : ITreeConverter
     {
         public IDictionary<string, object> Convert(ITree<BaseNode> tree)
         {
@@ -20,8 +20,8 @@
             var fullChildren = tree.Children.Where(x => x.Children.Any());
             var voidChildren = tree.Children.Where(x => !x.Children.Any());
 
-            target.AddRange(FullChildrenProcessing(fullChildren));
-            target.AddRange(VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
+            target.AddRangeIgnoreExist(FullChildrenProcessing(fullChildren));
+            target.AddRangeIgnoreExist(VoidChildrenProcessing(SortedBaseNodeTree.TreeMarkup(voidChildren)));
 
             foreach (var (key, value) in tree.Item.GetProperties())
             {
@@ -38,16 +38,22 @@
             IDictionary<string, object> target = new Dictionary<string, object>();
 
             if (!targetEls.Any())
+            {
                 return target;
+            }
 
             foreach (var group in targetEls.GroupBy(x => x.Key))
             {
-                var objects = @group.Select(element => element.Tree.Item.GetProperties().ToExpandoObject()).ToList();
+                var objects = @group.Select(element => element.Tree.Item.GetProperties()).ToList();
 
                 if (objects.Count() > 1)
+                {
                     target[@group.Key.ToString()] = objects;
+                }
                 else if (objects.Any(x => x.Any()))
+                {
                     target[@group.Key.ToString()] = objects.FirstOrDefault();
+                }
             }
 
             return target;
@@ -66,9 +72,13 @@
                 var key = group.Key;// GetKey();
 
                 if (objects.Count() == 1)
+                {
                     target[key] = objects.FirstOrDefault();
+                }
                 else
+                {
                     target[key] = objects;
+                }
             }
 
             return target;
