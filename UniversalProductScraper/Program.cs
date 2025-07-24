@@ -10,12 +10,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using OpenQA.Selenium.Chrome;
 using UniversalProductScraper.Loaders;
+using UniversalProductScraper.WebApi;
 
 namespace UniversalProductScraper
 {
     static class DI
     {
         public static IServiceProvider ServiceProvider { get; }
+
         static DI()
         {
             var chromeOprions = new ChromeOptions();
@@ -27,32 +29,29 @@ namespace UniversalProductScraper
             serviceCollection.AddSingleton<IScraper, Scraper>();
             serviceCollection.AddSingleton<ITreeConverter, TreeDictionaryConverter>();
             serviceCollection.AddSingleton<IWebDriver>(_ => new ChromeDriver(chromeOprions));
+            serviceCollection.AddSingleton<RequestWebLoader>();
             serviceCollection.AddSingleton<IWebLoader, RequestWebLoader>();
+            serviceCollection.AddSingleton<SeleniumLoader>();
+            serviceCollection.AddSingleton<ILoaderFactory, LoaderFactory>();
+            serviceCollection.AddSingleton<ScrapingService>();
             serviceCollection.AddSingleton(typeof(ITreeBuilder<>), typeof(TreeBuilder<>));
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
     }
+
     class Program
     {
         public static async Task Main(string[] args)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            var ss = DI.ServiceProvider.GetService<ScrapingService>();
-            var pageData = ss.ParsePage("https://www.russianfood.com/recipes/recipe.php?rid=149690/");
+            var server = new WebServer(c => c.WithUrlPrefix("http://*:5020"))
+                .WithCors()
+                .WithWebApi("/", m => m
+                    .WithController<UrlParserController>(() => new UrlParserController(DI.ServiceProvider)));
 
-            var server = new WebServer(c => c.WithUrlPrefix("http://*:5020")).WithCors().WithWebApi("/", x => x.WithController<TableResource>());
+            await server.RunAsync();
         }
-    }
-
-    class TableResource : WebApiController
-    {
-        // Тут стандартный Microsoft DI юзать
-
-        private readonly ScrapingService scrapingService = DI.ServiceProvider.GetService<ScrapingService>();
-
-        [Route(HttpVerbs.Post, "/parse/test")]
-        public string AddLink([QueryField] string link) => JsonConvert.SerializeObject(scrapingService.ScrapPage(link));
     }
 }

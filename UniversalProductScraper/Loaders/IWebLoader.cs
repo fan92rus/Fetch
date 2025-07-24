@@ -2,7 +2,7 @@
 {
     using AngleSharp.Html.Dom;
 
-    internal interface IWebLoader
+    public interface IWebLoader
     {
         string GetPageContent(string uri);
         IHtmlDocument LoadPageFromString(string text);
