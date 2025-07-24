@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,26 +13,17 @@
     <PackageReference Include="EmbedIO" Version="3.4.3" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Polly" Version="7.2.1" />
-    <PackageReference Include="RestSharp" Version="106.11.4" />
-    <PackageReference Include="Selenium.Chrome.WebDriver" Version="83.0.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Polly" Version="8.6.2" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
+    <PackageReference Include="Selenium.Chrome.WebDriver" Version="85.0.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
     <PackageReference Include="ServiceStack.Text" Version="5.9.0" />
-    <PackageReference Include="System.Data.HashFunction.Jenkins" Version="2.0.0" />
     <PackageReference Include="Unity" Version="5.11.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\simhash-csharp\src\Simhash\SimhashLib\SimhashLib.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Polly">
-      <HintPath>..\..\Scraper-Vouchers\Extentions\bin\Debug\Polly.dll</HintPath>
-    </Reference>
-    <Reference Include="RestSharp.Polly.Extensions.Core">
-      <HintPath>..\..\Scraper-Vouchers\RestSharp.PollyExtensions.Core\bin\Debug\netcoreapp3.1\RestSharp.Polly.Extensions.Core.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\RestSharp.Extensions\RestSharp.Polly.Extensions.Core.csproj" />
+    <ProjectReference Include="..\SimHash\SimHash.csproj" />
   </ItemGroup>
 
   <ItemGroup>

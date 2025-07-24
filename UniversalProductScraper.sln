@@ -5,9 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalProductScraper", "UniversalProductScraper\UniversalProductScraper.csproj", "{972D0CF5-89DE-4338-A640-C47EC758E669}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestSharp.Polly.Extensions.Core", "..\Scraper-Vouchers\RestSharp.PollyExtensions.Core\RestSharp.Polly.Extensions.Core.csproj", "{7C37D965-69B7-426F-A58B-BC0EE2651280}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestSharp.Polly.Extensions.Core", "..\UniversalProductScraper\RestSharp.Extensions\RestSharp.Polly.Extensions.Core.csproj", "{7C37D965-69B7-426F-A58B-BC0EE2651280}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimhashLib", "..\simhash-csharp\src\Simhash\SimhashLib\SimhashLib.csproj", "{0CA5067A-890E-4539-8658-7425F46EF2BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimHash", "SimHash\SimHash.csproj", "{B9035170-C867-428C-9F19-3C19F28D8853}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,14 +33,14 @@ Global
 		{7C37D965-69B7-426F-A58B-BC0EE2651280}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C37D965-69B7-426F-A58B-BC0EE2651280}.Release|x64.ActiveCfg = Release|Any CPU
 		{7C37D965-69B7-426F-A58B-BC0EE2651280}.Release|x64.Build.0 = Release|Any CPU
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Debug|x64.ActiveCfg = Debug|x64
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Debug|x64.Build.0 = Debug|x64
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Release|x64.ActiveCfg = Release|x64
-		{0CA5067A-890E-4539-8658-7425F46EF2BF}.Release|x64.Build.0 = Release|x64
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Debug|x64.Build.0 = Debug|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|x64.ActiveCfg = Release|Any CPU
+		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

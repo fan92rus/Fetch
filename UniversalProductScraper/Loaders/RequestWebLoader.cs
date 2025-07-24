@@ -16,14 +16,14 @@ namespace UniversalProductScraper.Loaders
         public RequestWebLoader()
         {
             Policy = Polly.Policy
-                .HandleResult<IRestResponse>(
+                .HandleResult<RestResponse>(
                     (response) => (response.StatusCode == 0 || response.StatusCode == HttpStatusCode.TooManyRequests)
                                   && response.ResponseStatus != ResponseStatus.TimedOut).WaitAndRetry(
                     2,
                     retryAttempt => TimeSpan.FromSeconds(2));
         }
 
-        public RetryPolicy<IRestResponse> Policy { get; set; }
+        public RetryPolicy<RestResponse> Policy { get; set; }
         public virtual string GetPageContent(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);

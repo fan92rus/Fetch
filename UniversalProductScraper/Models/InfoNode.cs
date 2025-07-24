@@ -33,7 +33,7 @@
         {
             Element = element;
             Selector = element.ParentElement != null
-                           ? element.GetSelector((element.ParentElement).GetSelector())
+                           ? element.GetSelector((element.ParentElement).GetSelector(SelectorType.Universal))
                            : element.GetSelector();
         }
 

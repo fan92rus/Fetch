@@ -144,9 +144,7 @@
 
             return parent;
         }
-
-        public static string GetSelector(this IElement element) => element.GetSelector(null, SelectorType.Universal, null);
-
+        
         public static string GetSelector(this IElement element, SelectorType type) => element.GetSelector(null, type, null);
 
         public static string GetSelector(this IElement element, string maxSelector) => element.GetSelector(maxSelector, SelectorType.Universal, null);
