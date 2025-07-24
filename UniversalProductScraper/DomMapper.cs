@@ -1,5 +1,4 @@
 ﻿using SimhashLib;
-using Unity;
 
 namespace UniversalProductScraper
 {
@@ -23,7 +22,6 @@ namespace UniversalProductScraper
 
     class DomMapper : IDomMapper
     {
-        [Dependency]
         public ITreeBuilder<InfoNode> TreeBuilder { get; set; }
 
         public List<Func<ITree<InfoNode>, bool>> CheckRules = new List<Func<ITree<InfoNode>, bool>>()
@@ -32,6 +30,12 @@ namespace UniversalProductScraper
                                                                x=>x.Item.Element.Attributes.Any(e => e.Name!="class" && e.Name!="id"),
                                                                x=>x.Item.Type == DomNodeType.Link
                                                            };
+
+        public DomMapper(ITreeBuilder<InfoNode> treeBuilder)
+        {
+            TreeBuilder = treeBuilder;
+        }
+
         public ITree<InfoNode> ParseDocumentMap(IHtmlDocument doc)
         {
             var root = new InfoNode() { Selector = "html", Element = doc.QuerySelector("html"), Type = DomNodeType.Container };

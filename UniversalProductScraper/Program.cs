@@ -1,45 +1,48 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
+﻿using System;
+using OpenQA.Selenium;
 using UniversalProductScraper.Graph;
-using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using OpenQA.Selenium.Chrome;
-using Unity;
 using UniversalProductScraper.Loaders;
 
 namespace UniversalProductScraper
 {
     static class DI
     {
-        public static IUnityContainer Container { get; }
+        public static IServiceProvider ServiceProvider { get; }
         static DI()
         {
             var chromeOprions = new ChromeOptions();
             // chromeOprions.AddArgument("--headless");
 
-            Container = new UnityContainer();
-            Container.RegisterType<IDomMapper, DomMapper>();
-            Container.RegisterType<IScraper, Scraper>();
-            Container.RegisterType<ITreeConverter, TreeDictionaryConverter>();
-            Container.RegisterInstance<IWebDriver>(new ChromeDriver(chromeOprions));
-            Container.RegisterType<IWebLoader, RequestWebLoader>();
-            Container.RegisterType(typeof(ITreeBuilder<>), typeof(TreeBuilder<>));
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSingleton<IDomMapper, DomMapper>();
+            serviceCollection.AddSingleton<IScraper, Scraper>();
+            serviceCollection.AddSingleton<ITreeConverter, TreeDictionaryConverter>();
+            serviceCollection.AddSingleton<IWebDriver>(_ => new ChromeDriver(chromeOprions));
+            serviceCollection.AddSingleton<IWebLoader, RequestWebLoader>();
+            serviceCollection.AddSingleton(typeof(ITreeBuilder<>), typeof(TreeBuilder<>));
+
+            ServiceProvider = serviceCollection.BuildServiceProvider();
         }
     }
     class Program
     {
         public static async Task Main(string[] args)
         {
-            var ss = DI.Container.Resolve<ScrapingService>();
-            var pageData = ss.ScrapPage("https://www.russianfood.com/recipes/recipe.php?rid=149690/");
-            var prices = pageData.Find(x => x.Selector.Contains("avail"));
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            //var server = new WebServer().WithCors().WithWebApi("/", x => x.WithController<TableResource>());
-            //await server.RunAsync();
+            var ss = DI.ServiceProvider.GetService<ScrapingService>();
+            var pageData = ss.ParsePage("https://www.russianfood.com/recipes/recipe.php?rid=149690/");
+
+            var server = new WebServer(c => c.WithUrlPrefix("http://*:5020")).WithCors().WithWebApi("/", x => x.WithController<TableResource>());
         }
     }
 
@@ -47,7 +50,7 @@ namespace UniversalProductScraper
     {
         // Тут стандартный Microsoft DI юзать
 
-        private readonly ScrapingService scrapingService = DI.Container.Resolve<ScrapingService>();
+        private readonly ScrapingService scrapingService = DI.ServiceProvider.GetService<ScrapingService>();
 
         [Route(HttpVerbs.Post, "/parse/test")]
         public string AddLink([QueryField] string link) => JsonConvert.SerializeObject(scrapingService.ScrapPage(link));

@@ -1,5 +1,4 @@
-﻿using Unity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -17,13 +16,11 @@ namespace UniversalProductScraper
         ITree<BaseNode> ScrapNode(ITree<InfoNode> info);
     }
 
-    class Scraper : IScraper
+    class Scraper(ITreeBuilder<BaseNode> treeBuilder) : IScraper
     {
-        [Dependency]
-        public ITreeBuilder<BaseNode> TreeBuilder { get; set; }
         public ITree<BaseNode> ScrapNode(ITree<InfoNode> info)
         {
-            var tree = TreeBuilder.Create(SetNode(info.Item));
+            var tree = treeBuilder.Create(SetNode(info.Item));
 
             foreach (var child in info.Children)
             {

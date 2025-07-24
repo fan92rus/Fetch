@@ -3,6 +3,7 @@ using UniversalProductScraper.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AngleSharp;
 using Newtonsoft.Json;
 using UniversalProductScraper.Graph;
 using UniversalProductScraper.Loaders;
@@ -26,6 +27,11 @@ namespace UniversalProductScraper
         private IWebLoader WebLoader { get; }
         private IDomMapper Mapper { get; }
         private IScraper Scraper { get; }
+
+        public string ParsePage(string url)
+        {
+            return WebLoader.GetPageContent(url);
+        }
 
         public ITree<BaseNode> ScrapPage(string url)
         {
