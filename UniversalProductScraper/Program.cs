@@ -54,7 +54,7 @@ namespace UniversalProductScraper
         }
     }
 
-    // Вспомогательный класс для хранения информации о каждом узле
+    // Вспомогательный класс для хранения информации о каждом узле.
     public class NodeScoreInfo
     {
         public double Score { get; set; }
