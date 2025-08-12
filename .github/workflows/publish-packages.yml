@@ -13,30 +13,29 @@ permissions:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'
-    
-    - name: Restore dependencies
-      run: dotnet restore
-    
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'  # или ваша версия
 
-    - name: Pack
-      run: dotnet pack --no-build --configuration Release -o packages
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Publish packages
-      run: |
-        dotnet nuget push "packages/*.nupkg" --source https://nuget.pkg.github.com/$GITHUB_REPOSITORY --api-key ${{ secrets.GITHUB_TOKEN }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack --configuration Release --no-build -o ./nupkgs
+
+      - name: Push NuGet package to GitHub Packages
+        run: dotnet nuget push ./nupkgs/*.nupkg --source "github" --api-key ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NUGET_EXPERIMENTAL_FEED_ENDPOINT: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Add GitHub Packages source
+        run: dotnet nuget add source --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
