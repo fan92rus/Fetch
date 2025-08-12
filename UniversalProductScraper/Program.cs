@@ -30,10 +30,13 @@ namespace UniversalProductScraper
         public static async Task Main(string[] args)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            var loader = DI.ServiceProvider.GetService<RequestWebLoader>();
+            var loaderFactory = DI.ServiceProvider.GetService<ILoaderFactory>();
+            var loader = loaderFactory.CreateLoader(LoadingType.HttpRequest);
+
             var result =
                 loader.GetPageContent(
                     "https://habr.com/ru/companies/vk/articles/200394/?roistat_visit=1861572/");
+
             var text = ArticleExtractor.ExtractArticle(result);
 
             var server = new WebServer(c => c.WithUrlPrefix("http://*:5020"))

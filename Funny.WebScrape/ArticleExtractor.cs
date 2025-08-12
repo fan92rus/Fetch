@@ -25,7 +25,7 @@ public static class ArticleExtractor
             .OrderByDescending(node => nodeInfo[node].Score)
             .FirstOrDefault();
 
-        return bestNode?.InnerHtml ?? string.Empty;
+        return bestNode?.InnerText ?? string.Empty;
     }
 
     private static void ProcessNode(HtmlNode node, Dictionary<HtmlNode, NodeScoreInfo> nodeInfo,
