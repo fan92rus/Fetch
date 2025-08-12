@@ -6,6 +6,10 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
