@@ -18,16 +18,8 @@ namespace UniversalProductScraper
 
         static DI()
         {
-            var chromeOprions = new ChromeOptions();
-            // chromeOprions.AddArgument("--headless");
-
             var serviceCollection = new ServiceCollection();
-
-            serviceCollection.AddSingleton<IWebDriver>(_ => new ChromeDriver(chromeOprions));
-            serviceCollection.AddSingleton<RequestWebLoader>();
-            serviceCollection.AddSingleton<IWebLoader, RequestWebLoader>();
-            serviceCollection.AddSingleton<SeleniumLoader>();
-            serviceCollection.AddSingleton<ILoaderFactory, LoaderFactory>();
+            serviceCollection.AddWebScrapingServices();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
         }
