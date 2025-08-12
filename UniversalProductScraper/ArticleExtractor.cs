@@ -59,7 +59,10 @@ public static class ArticleExtractor
                 totalChildCount += childInfo.ChildCount;
             }
         }
-
+        if (node.Name is "body")
+        {
+            ;
+        }
         // Добавляем текущий узел в статистику
         var tagName = node.Name.ToLower();
         childStats[tagName] = childStats.GetValueOrDefault(tagName, 0) + 1;
@@ -97,9 +100,13 @@ public static class ArticleExtractor
                              childStats.GetValueOrDefault("#text", 0); // Упрощаем: считаем только "значимые" тексты
 
         var totalNodes = totalCount;
+        if (node.Name is "section")
+        {
+            ;
+        }
         var nodeRate = totalGoodNodes / (double)(totalNodes - totalGoodNodes + 1); // +1 чтобы избежать деления на 0
 
-        if (nodeRate < 0.7)
+        if (nodeRate < 1)
         {
             score -= Math.Max(0, score * (1 - nodeRate / 2));
         }
@@ -125,18 +132,14 @@ public static class ArticleExtractor
         if (node == null) return false;
 
         var lowerName = node.Name.ToLower();
-        var lowerClass = node.GetAttributeValue("class", "").ToLower();
-        var lowerId = node.GetAttributeValue("id", "").ToLower();
 
         var badPatterns = new[]
         {
             "header", "footer", "nav", "aside", "navbar", "navigation", "menu", "sidebar", "sidebar-right",
-            "pagination", "pager", "ads", "advertisement", "banner",
             "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "a"
         };
 
         if (badPatterns.Contains(lowerName)) return true;
-        if (badPatterns.Any(p => lowerClass.Contains(p) || lowerId.Contains(p))) return true;
 
         return false;
     }
