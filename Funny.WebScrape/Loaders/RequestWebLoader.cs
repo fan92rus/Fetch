@@ -1,16 +1,14 @@
-﻿using Extensions.RestSharp;
+﻿using System.Net;
+using AngleSharp;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
+using Extensions.RestSharp;
+using Polly;
+using Polly.Retry;
+using RestSharp;
 
-namespace UniversalProductScraper.Loaders
+namespace Funny.WebScrape.Loaders
 {
-    using System;
-    using System.Net;
-    using AngleSharp;
-    using AngleSharp.Html.Dom;
-    using AngleSharp.Html.Parser;
-    using Polly;
-    using Polly.Retry;
-    using RestSharp;
-
     public class RequestWebLoader : IWebLoader
     {
         public RequestWebLoader()

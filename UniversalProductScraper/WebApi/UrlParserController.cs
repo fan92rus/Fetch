@@ -2,10 +2,8 @@ using System;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using Funny.WebScrape.Loaders;
 using Microsoft.Extensions.DependencyInjection;
-using NBoilerpipe.Extractors;
-using Newtonsoft.Json;
-using UniversalProductScraper.Loaders;
 
 namespace UniversalProductScraper.WebApi;
 

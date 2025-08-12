@@ -1,7 +1,7 @@
-﻿namespace UniversalProductScraper.Loaders
-{
-    using AngleSharp.Html.Dom;
+﻿using AngleSharp.Html.Dom;
 
+namespace Funny.WebScrape.Loaders
+{
     public interface IWebLoader
     {
         string GetPageContent(string uri);

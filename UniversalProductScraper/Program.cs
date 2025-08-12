@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using OpenQA.Selenium;
 using System.Text;
 using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.WebApi;
+using Funny.WebScrape;
+using Funny.WebScrape.Loaders;
 using Microsoft.Extensions.DependencyInjection;
-using NBoilerpipe.Extractors;
 using OpenQA.Selenium.Chrome;
-using UniversalProductScraper.Loaders;
 using UniversalProductScraper.WebApi;
 
 namespace UniversalProductScraper
@@ -54,12 +53,4 @@ namespace UniversalProductScraper
         }
     }
 
-    // Вспомогательный класс для хранения информации о каждом узле.
-    public class NodeScoreInfo
-    {
-        public double Score { get; set; }
-        public int TextLength { get; set; }
-        public Dictionary<string, int> TagCount { get; set; } = new Dictionary<string, int>();
-        public int ChildCount { get; set; }
-    }
 }

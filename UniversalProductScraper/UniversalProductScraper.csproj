@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Funny.WebScrape\Funny.WebScrape.csproj" />
     <ProjectReference Include="..\RestSharp.Extensions\RestSharp.Polly.Extensions.Core.csproj" />
     <ProjectReference Include="..\SimHash\SimHash.csproj" />
   </ItemGroup>

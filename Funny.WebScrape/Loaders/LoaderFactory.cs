@@ -1,7 +1,4 @@
-using System;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace UniversalProductScraper.Loaders
+namespace Funny.WebScrape.Loaders
 {
     public interface ILoaderFactory
     {

@@ -1,6 +1,4 @@
-using System;
-
-namespace UniversalProductScraper.Loaders
+namespace Funny.WebScrape.Loaders
 {
     public enum LoadingType
     {

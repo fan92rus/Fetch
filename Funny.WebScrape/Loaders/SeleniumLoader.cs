@@ -1,12 +1,10 @@
-﻿using System;
-using AngleSharp;
+﻿using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 
-namespace UniversalProductScraper.Loaders
+namespace Funny.WebScrape.Loaders
 {
     public class SeleniumLoader : IWebLoader
     {

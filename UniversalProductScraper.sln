@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestSharp.Polly.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimHash", "SimHash\SimHash.csproj", "{B9035170-C867-428C-9F19-3C19F28D8853}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funny.WebScrape", "Funny.WebScrape\Funny.WebScrape.csproj", "{F51B5CBF-1183-47A9-A537-86AFA3EC3478}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,14 @@ Global
 		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|x64.ActiveCfg = Release|Any CPU
 		{B9035170-C867-428C-9F19-3C19F28D8853}.Release|x64.Build.0 = Release|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Debug|x64.Build.0 = Debug|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Release|x64.ActiveCfg = Release|Any CPU
+		{F51B5CBF-1183-47A9-A537-86AFA3EC3478}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
