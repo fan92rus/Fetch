@@ -1,0 +1,143 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using HtmlAgilityPack;
+
+namespace UniversalProductScraper;
+
+public static class ArticleExtractor
+{
+    public static string ExtractArticle(string html)
+    {
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+        var body = doc.DocumentNode.SelectSingleNode("//body");
+        if (body == null) return string.Empty;
+
+        // Собираем все узлы и сразу считаем статистику
+        var nodeInfo = new Dictionary<HtmlNode, NodeScoreInfo>();
+        var allNodes = new List<HtmlNode>();
+
+        // Обход дерева снизу вверх: сначала обрабатываем дочерние узлы, потом родительские
+        ProcessNode(body, nodeInfo, allNodes);
+
+        // Теперь оцениваем каждый узел (уже с готовыми данными)
+        var bestNode = allNodes
+            .Where(node => nodeInfo[node].Score > 0)
+            .OrderByDescending(node => nodeInfo[node].Score)
+            .FirstOrDefault();
+
+        return bestNode?.InnerHtml ?? string.Empty;
+    }
+
+    private static void ProcessNode(HtmlNode node, Dictionary<HtmlNode, NodeScoreInfo> nodeInfo,
+        List<HtmlNode> allNodes)
+    {
+        // Добавляем текущий узел
+        allNodes.Add(node);
+
+        // Собираем статистику по дочерним узлам
+        var childStats = new Dictionary<string, int>();
+        var childTextLength = 0;
+        var totalChildCount = 0;
+
+        foreach (var child in node.ChildNodes)
+        {
+            ProcessNode(child, nodeInfo, allNodes); // Рекурсивно обрабатываем дочерние
+
+            // Собираем статистику по дочерним
+            if (nodeInfo.TryGetValue(child, out var childInfo))
+            {
+                // Суммируем статистику от дочерних узлов
+                foreach (var kvp in childInfo.TagCount)
+                {
+                    childStats[kvp.Key] = childStats.GetValueOrDefault(kvp.Key, 0) + kvp.Value;
+                }
+
+                childTextLength += childInfo.TextLength;
+                totalChildCount += childInfo.ChildCount;
+            }
+        }
+
+        // Добавляем текущий узел в статистику
+        var tagName = node.Name.ToLower();
+        childStats[tagName] = childStats.GetValueOrDefault(tagName, 0) + 1;
+
+        // Общее количество узлов (включая текущий и всех дочерних)
+        var totalCount = totalChildCount + 1;
+
+        // Текст текущего узла
+        var text = node.InnerText.Trim();
+        var normalizedText = Regex.Replace(text, @"\s+", " ").Trim();
+        var textLength = normalizedText.Length;
+
+        // Оценка узла (теперь без рекурсивного CollectNodes)
+        var score = textLength * 0.1; // Длина текста
+
+        // Паттерны в class/id — не будем проверять здесь, а просто запомним
+        var isBadNode = IsBadNode(node) || IsBadNode(node.ParentNode);
+        if (isBadNode)
+        {
+            nodeInfo[node] = new NodeScoreInfo
+                { Score = 0, TextLength = textLength, TagCount = childStats, ChildCount = totalCount };
+            return;
+        }
+
+        // Если текст слишком короткий — штраф
+        if (textLength < 50)
+            score -= 5;
+
+        // Отношение количества "хороших" тегов к общему
+        var totalGoodNodes = childStats.GetValueOrDefault("p", 0) +
+                             childStats.GetValueOrDefault("h1", 0) * 5 +
+                             childStats.GetValueOrDefault("h2", 0) +
+                             childStats.GetValueOrDefault("h3", 0) +
+                             childStats.GetValueOrDefault("hr", 0) +
+                             childStats.GetValueOrDefault("#text", 0); // Упрощаем: считаем только "значимые" тексты
+
+        var totalNodes = totalCount;
+        var nodeRate = totalGoodNodes / (double)(totalNodes - totalGoodNodes + 1); // +1 чтобы избежать деления на 0
+
+        if (nodeRate < 0.7)
+        {
+            score -= Math.Max(0, score * (1 - nodeRate / 2));
+        }
+
+        // Штраф за много дочерних, но мало текста
+        if (totalChildCount > 0 && textLength / totalChildCount < 10)
+        {
+            score -= 10;
+        }
+
+        // Сохраняем результат
+        nodeInfo[node] = new NodeScoreInfo
+        {
+            Score = Math.Max(0, score),
+            TextLength = textLength,
+            TagCount = childStats,
+            ChildCount = totalCount
+        };
+    }
+
+    private static bool IsBadNode(HtmlNode node)
+    {
+        if (node == null) return false;
+
+        var lowerName = node.Name.ToLower();
+        var lowerClass = node.GetAttributeValue("class", "").ToLower();
+        var lowerId = node.GetAttributeValue("id", "").ToLower();
+
+        var badPatterns = new[]
+        {
+            "header", "footer", "nav", "aside", "navbar", "navigation", "menu", "sidebar", "sidebar-right",
+            "pagination", "pager", "ads", "advertisement", "banner",
+            "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "a"
+        };
+
+        if (badPatterns.Contains(lowerName)) return true;
+        if (badPatterns.Any(p => lowerClass.Contains(p) || lowerId.Contains(p))) return true;
+
+        return false;
+    }
+}

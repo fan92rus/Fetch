@@ -11,9 +11,11 @@
     <PackageReference Include="AngleSharp.Io" Version="0.14.0" />
     <PackageReference Include="AngleSharp.Js" Version="0.14.0" />
     <PackageReference Include="EmbedIO" Version="3.4.3" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
     <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="NBoilerpipe" Version="1.2.6086.41351" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Polly" Version="8.6.2" />
     <PackageReference Include="RestSharp" Version="112.1.0" />

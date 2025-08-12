@@ -3,6 +3,7 @@ using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 
 namespace UniversalProductScraper.Loaders
@@ -22,10 +23,12 @@ namespace UniversalProductScraper.Loaders
             WaitForPageLoad();
             return _driver.PageSource;
         }
+
         protected void WaitForPageLoad()
         {
             var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(50));
-            wait.Until(driver => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
+            wait.Until(driver =>
+                ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
         }
 
         public IHtmlDocument LoadPageFromString(string text)

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-using Extensions.RestSharp;
+﻿using Extensions.RestSharp;
 
 namespace UniversalProductScraper.Loaders
 {
