@@ -93,14 +93,14 @@ public static class ArticleExtractor
 
         // Отношение количества "хороших" тегов к общему
         var totalGoodNodes = childStats.GetValueOrDefault("p", 0) +
-                             childStats.GetValueOrDefault("h1", 0) * 5 +
+                             childStats.GetValueOrDefault("h1", 0) +
                              childStats.GetValueOrDefault("h2", 0) +
                              childStats.GetValueOrDefault("h3", 0) +
-                             childStats.GetValueOrDefault("hr", 0) +
-                             childStats.GetValueOrDefault("#text", 0); // Упрощаем: считаем только "значимые" тексты
+                             childStats.GetValueOrDefault("br", 0) +
+                             childStats.GetValueOrDefault("hr", 0); // Упрощаем: считаем только "значимые" тексты
 
         var totalNodes = totalCount;
-        if (node.Name is "section")
+        if (node.Name is "body")
         {
             ;
         }
@@ -108,7 +108,7 @@ public static class ArticleExtractor
 
         if (nodeRate < 1)
         {
-            score -= Math.Max(0, score * (1 - nodeRate / 2));
+            score -= Math.Max(0, score * (1 - nodeRate));
         }
 
         // Штраф за много дочерних, но мало текста
