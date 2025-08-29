@@ -63,10 +63,7 @@ public static class ArticleExtractor
                 totalChildCount += childInfo.ChildCount;
             }
         }
-        if (node.Name is "body")
-        {
-            ;
-        }
+
         // Добавляем текущий узел в статистику
         var tagName = node.Name.ToLower();
         childStats[tagName] = childStats.GetValueOrDefault(tagName, 0) + 1;
