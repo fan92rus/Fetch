@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using ReverseMarkdown;
 
 namespace Funny.WebScrape;
 
@@ -25,7 +26,13 @@ public static class ArticleExtractor
             .OrderByDescending(node => nodeInfo[node].Score)
             .FirstOrDefault();
 
-        return bestNode?.InnerText ?? string.Empty;
+        // Очищаем лучший узел от дочерних badNodes
+        RemoveBadChildNodes(bestNode);
+
+        var converter = new Converter();
+        var text = converter.Convert(bestNode.InnerHtml);
+        
+        return text ?? string.Empty;
     }
 
     private static void ProcessNode(HtmlNode node, Dictionary<HtmlNode, NodeScoreInfo> nodeInfo,
@@ -96,11 +103,15 @@ public static class ArticleExtractor
                              childStats.GetValueOrDefault("br", 0) +
                              childStats.GetValueOrDefault("hr", 0); // Упрощаем: считаем только "значимые" тексты
 
+        // Отношение количества "хороших" тегов к общему
+        var totalBadNodes = childStats.GetValueOrDefault("a", 0) +
+                            childStats.GetValueOrDefault("span", 0) +
+                            childStats.GetValueOrDefault("li", 0);
+
+        var goodBad = (float)totalBadNodes / (float)totalGoodNodes;
+
         var totalNodes = totalCount;
-        if (node.Name is "body")
-        {
-            ;
-        }
+
         var nodeRate = totalGoodNodes / (double)(totalNodes - totalGoodNodes + 1); // +1 чтобы избежать деления на 0
 
         if (nodeRate < 1)
@@ -124,6 +135,26 @@ public static class ArticleExtractor
         };
     }
 
+    private static void RemoveBadChildNodes(HtmlNode node)
+    {
+        if (node == null) return;
+
+        // Работаем с копией списка для безопасного удаления
+        var children = node.ChildNodes.ToList();
+        
+        foreach (var child in children)
+        {
+            // Рекурсивно очищаем дочерние узлы
+            RemoveBadChildNodes(child);
+            
+            // Проверяем и удаляем badNodes
+            if (IsBadNode(child))
+            {
+                node.RemoveChild(child);
+            }
+        }
+    }
+
     private static bool IsBadNode(HtmlNode node)
     {
         if (node == null) return false;
@@ -133,7 +164,7 @@ public static class ArticleExtractor
         var badPatterns = new[]
         {
             "header", "footer", "nav", "aside", "navbar", "navigation", "menu", "sidebar", "sidebar-right",
-            "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "a"
+            "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "aside", "table", "figure"
         };
 
         if (badPatterns.Contains(lowerName)) return true;
