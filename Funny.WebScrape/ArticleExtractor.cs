@@ -28,8 +28,14 @@ public static class ArticleExtractor
 
         // Очищаем лучший узел от дочерних badNodes
         RemoveBadChildNodes(bestNode);
+        var config = new ReverseMarkdown.Config
+        {
+            UnknownTags = Config.UnknownTagsOption.Bypass, // Вместо сохранения `<tag>` просто удаляет
+            GithubFlavored = true, // Включает GFM (поддержка таблиц, списков и т.п.)
+            SmartHrefHandling = true,
+        };
 
-        var converter = new Converter();
+        var converter = new Converter(config);
         var text = converter.Convert(bestNode.InnerHtml);
         
         return text ?? string.Empty;

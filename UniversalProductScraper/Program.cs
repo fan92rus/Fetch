@@ -35,7 +35,7 @@ namespace UniversalProductScraper
 
             var result =
                 loader.GetPageContent(
-                    "https://ru.ruwiki.ru/wiki/%D0%A1%D0%BC%D0%B5%D1%88%D0%B0%D1%80%D0%B8%D0%BA%D0%B8");
+                    "https://ru.wikipedia.org/wiki/%D0%A1%D0%BC%D0%B5%D1%88%D0%B0%D1%80%D0%B8%D0%BA%D0%B8");
             //https://63.ru/text/culture/2025/01/04/74944655/
             var text = ArticleExtractor.ExtractArticle(result);
 
