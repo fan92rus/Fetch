@@ -167,7 +167,7 @@ public static class ArticleExtractor
         var badPatterns = new[]
         {
             "header", "footer", "nav", "aside", "navbar", "navigation", "menu", "sidebar", "sidebar-right",
-            "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "aside", "table", "figure"
+            "widget", "social", "share", "related", "subscribe", "button", "style", "script", "link", "aside", "table", "figure", "ul", "li"
         };
 
         if (badPatterns.Contains(lowerName)) return true;
