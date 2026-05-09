@@ -13,7 +13,7 @@ COPY Fetch.Cli/Fetch.Cli.csproj Fetch.Cli/
 COPY Funny.WebScrape/Funny.WebScrape.csproj Funny.WebScrape/
 COPY RestSharp.Extensions/RestSharp.Polly.Extensions.Core.csproj RestSharp.Extensions/
 COPY SimHash/SimHash.csproj SimHash/
-COPY UniversalProductScraper.sln .
+COPY Fetch.sln .
 
 RUN dotnet restore
 
