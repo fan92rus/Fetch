@@ -18,6 +18,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +29,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+
+      - name: Add GitHub Packages NuGet source
+        run: |
+          dotnet nuget add source --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
       - run: dotnet restore
       - run: dotnet build --configuration Release --no-restore
@@ -82,10 +90,12 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - run: dotnet pack Fetch.Cli/Fetch.Cli.csproj -c Release -o ./nupkgs
-
-      - name: Push to GitHub Packages
+      - name: Add GitHub Packages NuGet source
         run: |
           dotnet nuget add source --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
-          dotnet nuget push ./nupkgs/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+
+      - run: dotnet pack Fetch.Cli/Fetch.Cli.csproj -c Release -o ./nupkgs
+
+      - name: Push tool package
+        run: dotnet nuget push ./nupkgs/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
