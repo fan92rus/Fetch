@@ -5,8 +5,7 @@ ARG GITHUB_TOKEN
 COPY nuget.config .
 
 RUN if [ -n "$GITHUB_TOKEN" ]; then \
-      dotnet nuget add source --name github "https://nuget.pkg.github.com/fan92rus/index.json" \
-        --username fan92rus --password "$GITHUB_TOKEN" --store-password-in-clear-text; \
+      dotnet nuget update source github --username fan92rus --password "$GITHUB_TOKEN" --store-password-in-clear-text; \
     fi
 
 COPY Fetch.Server/Fetch.Server.csproj Fetch.Server/
