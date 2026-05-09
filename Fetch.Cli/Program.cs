@@ -1,9 +1,16 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Fetch.Cli;
 
 class Program
 {
+    private static readonly string ConfigDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "fetch.cli");
+
+    private static readonly string ConfigPath = Path.Combine(ConfigDir, "config.json");
+
     static async Task<int> Main(string[] args)
     {
         if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
@@ -12,10 +19,15 @@ class Program
             return 0;
         }
 
+        if (args[0] == "config")
+            return HandleConfig(args[1..]);
+
         var url = args[0];
         var loadingType = GetOption(args, "--loading-type", "-l") ?? "HttpRequest";
-        var server = GetOption(args, "--server", "-s") ?? "http://localhost:5020";
         var mode = GetOption(args, "--mode", "-m") ?? "article";
+
+        var config = LoadConfig();
+        var server = GetOption(args, "--server", "-s") ?? config.Server ?? "http://localhost:5020";
 
         var conversionMode = mode.Equals("full-page", StringComparison.OrdinalIgnoreCase)
             ? "FullPage"
@@ -52,6 +64,62 @@ class Program
         }
     }
 
+    static int HandleConfig(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            var config = LoadConfig();
+            Console.WriteLine($"server = {config.Server ?? "(not set)"}");
+            Console.WriteLine($"Config file: {ConfigPath}");
+            return 0;
+        }
+
+        if (args.Length == 2 && args[0] == "set" && args[1].StartsWith("server="))
+        {
+            var value = args[1]["server=".Length..];
+            var config = LoadConfig();
+            config.Server = value;
+            SaveConfig(config);
+            Console.WriteLine($"server = {value}");
+            return 0;
+        }
+
+        if (args.Length == 2 && args[0] == "set" && args[1].StartsWith("server "))
+        {
+            var value = args[1]["server ".Length..];
+            var config = LoadConfig();
+            config.Server = value;
+            SaveConfig(config);
+            Console.WriteLine($"server = {value}");
+            return 0;
+        }
+
+        Console.Error.WriteLine("Usage: fetch config [set server=<url>]");
+        return 1;
+    }
+
+    static FetchConfig LoadConfig()
+    {
+        if (!File.Exists(ConfigPath)) return new FetchConfig();
+
+        try
+        {
+            var json = File.ReadAllText(ConfigPath);
+            return JsonSerializer.Deserialize<FetchConfig>(json) ?? new FetchConfig();
+        }
+        catch
+        {
+            return new FetchConfig();
+        }
+    }
+
+    static void SaveConfig(FetchConfig config)
+    {
+        Directory.CreateDirectory(ConfigDir);
+        var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(ConfigPath, json);
+    }
+
     static string? GetOption(string[] args, string longName, string shortName)
     {
         for (var i = 0; i < args.Length - 1; i++)
@@ -65,6 +133,11 @@ class Program
     static void PrintHelp()
     {
         Console.WriteLine("Usage: fetch <url> [options]");
+        Console.WriteLine("       fetch config [set server=<url>]");
+        Console.WriteLine();
+        Console.WriteLine("Commands:");
+        Console.WriteLine("  config                  Show current configuration");
+        Console.WriteLine("  config set server=<url> Set default Fetch.Server URL");
         Console.WriteLine();
         Console.WriteLine("Arguments:");
         Console.WriteLine("  <url>                   URL of the page to parse");
@@ -72,14 +145,21 @@ class Program
         Console.WriteLine("Options:");
         Console.WriteLine("  -m, --mode <mode>       Conversion mode: article (default) or full-page");
         Console.WriteLine("  -l, --loading-type <t>  Loader type: HttpRequest (default) or Selenium");
-        Console.WriteLine("  -s, --server <url>      Backend server URL (default: http://localhost:5020)");
+        Console.WriteLine("  -s, --server <url>      Override server URL (default: from config or http://localhost:5020)");
         Console.WriteLine("  -h, --help              Show this help");
+        Console.WriteLine();
+        Console.WriteLine("Config file: %APPDATA%\\fetch.cli\\config.json");
         Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  fetch https://example.com");
         Console.WriteLine("  fetch https://example.com -m full-page");
-        Console.WriteLine("  fetch https://example.com -l Selenium -s http://myserver:5020");
+        Console.WriteLine("  fetch config set server=http://myserver:5020");
     }
 }
 
 file record ParseResponse(string Content);
+
+class FetchConfig
+{
+    public string? Server { get; set; }
+}
