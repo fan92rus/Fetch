@@ -3,10 +3,11 @@ name: fetch
 description: >
   HTML to Markdown converter via Fetch.Cli. Fetch web pages and convert them
   to clean Markdown. Supports article extraction and full-page conversion.
+  Images are excluded by default; use --images to include them.
   TRIGGER: When the user asks to read a web page, convert HTML to Markdown,
   fetch page content, or extract article text from a URL.
 allowed-tools: Bash(fetch)
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # Fetch.Cli — HTML to Markdown
@@ -49,6 +50,18 @@ Short flag:
 fetch "https://example.com" -m full-page
 ```
 
+## Images
+
+Images are **excluded by default** for minimal token usage. Include them with:
+```bash
+fetch "https://example.com" --images
+```
+
+Set images as default in config:
+```bash
+fetch config set images=true
+```
+
 ## Loading Types
 
 **HttpRequest (default)** — fast, no JS rendering:
@@ -79,15 +92,16 @@ fetch "https://example.com" -s http://myserver:5020
 
 ## Configuration File
 
-Set defaults in `%APPDATA%\fetch.cli\config.json` (Windows) or `~/.config/fetch.cli/config.json` (Linux/macOS):
+Set defaults in `~/.config/fetch.cli/config.json`:
 
 ```json
 {
-  "Server": "http://localhost:5020"
+  "Server": "http://localhost:5020",
+  "Images": false
 }
 ```
 
-Priority: CLI flags > config file > built-in defaults (`http://localhost:5020`).
+Priority: CLI flags > config file > built-in defaults.
 
 **Interactive setup:**
 ```bash
@@ -98,6 +112,7 @@ Priority: CLI flags > config file > built-in defaults (`http://localhost:5020`).
 **Manual config:**
 ```bash
 fetch config set server=http://myserver:5020
+fetch config set images=true
 ```
 
 **View current config:**
@@ -121,6 +136,7 @@ Plain Markdown text written to stdout. Suitable for direct use in AI context.
 ## Best Practices
 
 - **Use article mode** by default — cleaner, more relevant content
+- **Exclude images** by default — saves tokens for AI context
 - **Use full-page mode** when you need navigation, sidebars, or complete page structure
 - **Use Selenium** only when page content requires JavaScript rendering
 - **Keep server running** — Fetch.Server must be accessible for the CLI to work

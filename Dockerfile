@@ -22,15 +22,10 @@ RUN dotnet publish Fetch.Server/Fetch.Server.csproj -c Release -o /app/publish -
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0 AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV CHROME_BIN=/usr/bin/chromium
-ENV REMOTE_BROWSER_URL=
-
 WORKDIR /app
 COPY --from=build /app/publish .
+
+ENV FLARESOLVERR_URL=http://flaresolverr:8191
 
 EXPOSE 5020
 

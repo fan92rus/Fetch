@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.ContentExtraction;
 using AngleSharp.Html.Parser;
@@ -13,16 +14,22 @@ public enum ConversionMode
 
 public class HtmlToMarkdownConverter
 {
+    private static readonly Regex ImagePattern = new(@"!\[[^\]]*\]\([^)]+\)\s*", RegexOptions.Compiled);
     private readonly MdreamConverter _mdream = new();
 
-    public async Task<string> ConvertAsync(string html, string url, ConversionMode mode)
+    public async Task<string> ConvertAsync(string html, string url, ConversionMode mode, bool images = false)
     {
         var inputHtml = mode == ConversionMode.Article
             ? ExtractArticleContent(html)
             : html;
 
         var result = await _mdream.ConvertAsync(inputHtml, originUrl: url);
-        return result.Markdown ?? string.Empty;
+        var markdown = result.Markdown ?? string.Empty;
+
+        if (!images)
+            markdown = ImagePattern.Replace(markdown, "");
+
+        return markdown;
     }
 
     private static string ExtractArticleContent(string html)

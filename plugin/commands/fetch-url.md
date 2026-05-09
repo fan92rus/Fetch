@@ -6,11 +6,12 @@ Convert a web page to Markdown using the Fetch.Cli tool.
 
 **Step 1: Run fetch**
 ```bash
-fetch "<url>" [--mode <mode>] [--loading-type <type>] [--server <url>]
+fetch "<url>" [--mode <mode>] [--loading-type <type>] [--images] [--server <url>]
 ```
 
 **Step 2: Analyze result**
 - The command outputs the page content as Markdown directly to stdout
+- Images are excluded by default; use `--images` to include them
 - If error: report the error message from stderr
 
 **Step 3: Suggest next actions**
@@ -21,6 +22,7 @@ fetch "<url>" [--mode <mode>] [--loading-type <type>] [--server <url>]
 **Examples:**
 ```bash
 fetch "https://example.com"
+fetch "https://example.com" --images
 fetch "https://example.com" --mode full-page
 fetch "https://example.com" --loading-type Selenium
 fetch "https://example.com" --server http://myserver:5020

@@ -1,20 +1,21 @@
 version: '3.8'
 
 services:
-  universalproductscraper:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  fetch-server:
+    image: ghcr.io/fan92rus/fetch:latest
     ports:
       - "5020:5020"
     environment:
-      - ASPNETCORE_URLS=http://+:5020
-      - REMOTE_BROWSER_URL=http://selenium-chrome:4444/wd/hub
+      - FLARESOLVERR_URL=http://flaresolverr:8191
     depends_on:
-      - selenium-chrome
+      - flaresolverr
+    restart: unless-stopped
 
-  selenium-chrome:
-    image: selenium/standalone-chrome:latest
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
     ports:
-      - "4444:4444"
-    shm_size: '1gb'
+      - "8191:8191"
+    environment:
+      - LOG_LEVEL=info
+      - CAPTCHA_SOLVER=none
+    restart: unless-stopped

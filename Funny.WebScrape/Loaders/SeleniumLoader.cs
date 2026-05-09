@@ -12,11 +12,11 @@ namespace Funny.WebScrape.Loaders
             _driver = driver;
         }
 
-        public string GetPageContent(string uri)
+        public Task<string> GetPageContentAsync(string uri)
         {
             _driver.Navigate().GoToUrl(uri);
             WaitForPageLoad();
-            return _driver.PageSource;
+            return Task.FromResult(_driver.PageSource);
         }
 
         protected void WaitForPageLoad()

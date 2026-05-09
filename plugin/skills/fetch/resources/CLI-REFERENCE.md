@@ -21,11 +21,13 @@ Convert a web page to Markdown.
 | `--mode` | `-m` | string | `article` | Conversion mode: `article` or `full-page` |
 | `--loading-type` | `-l` | string | `HttpRequest` | Loader: `HttpRequest` or `Selenium` |
 | `--server` | `-s` | string | `http://localhost:5020` | Fetch.Server URL |
+| `--images` | — | flag | off | Include images in output |
 | `--help` | `-h` | — | — | Show help |
 
 **Examples:**
 ```bash
 fetch https://example.com
+fetch https://example.com --images
 fetch https://example.com --mode full-page
 fetch https://example.com -m full-page -l Selenium
 fetch https://example.com --server http://myserver:5020
@@ -39,24 +41,24 @@ Show current configuration.
 fetch config
 ```
 
-### `fetch config set server=<url>`
+### `fetch config set <key>=<value>`
 
-Set the default Fetch.Server URL.
+Set configuration defaults.
 
 ```bash
 fetch config set server=http://myserver:5020
-fetch config set server http://myserver:5020
+fetch config set images=true
 ```
 
 ## Configuration File
 
-**Path (Windows):** `%APPDATA%\fetch.cli\config.json`
-**Path (Linux/macOS):** `~/.config/fetch.cli/config.json`
+**Path:** `~/.config/fetch.cli/config.json`
 
 **Schema:**
 ```json
 {
-  "Server": "string?"
+  "Server": "string?",
+  "Images": "bool?"
 }
 ```
 

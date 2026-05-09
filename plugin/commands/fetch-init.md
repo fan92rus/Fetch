@@ -20,17 +20,19 @@ Ask each question one at a time. If the user presses Enter without typing anythi
 | Setting | Question | Default |
 |---------|----------|---------|
 | `Server` | Fetch.Server URL (e.g. http://localhost:5020) | `http://localhost:5020` |
+| `Images` | Include images by default? (true/false) | `false` |
 
 **Step 3: Write config file**
 
-Write the collected values to `%APPDATA%\fetch.cli\config.json` (or `$HOME/.config/fetch.cli/config.json` on Linux/macOS).
+Write the collected values to `~/.config/fetch.cli/config.json` (`%USERPROFILE%\.config\fetch.cli\config.json` on Windows).
 
 Only include fields that the user explicitly set or that have non-null defaults. Omit empty / null values.
 
 Example output:
 ```json
 {
-  "Server": "http://localhost:5020"
+  "Server": "http://localhost:5020",
+  "Images": false
 }
 ```
 

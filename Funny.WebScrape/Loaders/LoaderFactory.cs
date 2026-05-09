@@ -21,22 +21,10 @@ namespace Funny.WebScrape.Loaders
                 case LoadingType.HttpRequest:
                     return new RequestWebLoader();
                 case LoadingType.Selenium:
-                    var remoteUrl = Environment.GetEnvironmentVariable("REMOTE_BROWSER_URL");
-
-                    if (!string.IsNullOrEmpty(remoteUrl))
-                    {
-                        var options = new OpenQA.Selenium.Chrome.ChromeOptions();
-                        var driver = new OpenQA.Selenium.Remote.RemoteWebDriver(new Uri(remoteUrl), options.ToCapabilities());
-                        return new SeleniumLoader(driver);
-                    }
-                    else
-                    {
-                        var driver = new OpenQA.Selenium.Chrome.ChromeDriver();
-                        return new SeleniumLoader(driver);
-                    }
+                    return new FlareSolverrLoader();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(loadingType), loadingType, null);
+            }
+        }
     }
-    }
-}
 }
