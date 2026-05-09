@@ -1,0 +1,13 @@
+{
+  "name": "fetch-marketplace",
+  "description": "HTML to Markdown converter via Fetch.Cli for AI agents",
+  "owner": { "name": "fan92rus" },
+  "plugins": [
+    {
+      "name": "fetch",
+      "source": "./plugin",
+      "description": "HTML to Markdown converter via Fetch.Cli for AI agents",
+      "version": "1.0.0"
+    }
+  ]
+}
