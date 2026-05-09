@@ -1,7 +1,4 @@
-﻿using System.Net;
-using AngleSharp;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
+using System.Net;
 using Extensions.RestSharp;
 using Polly;
 using Polly.Retry;
@@ -21,7 +18,7 @@ namespace Funny.WebScrape.Loaders
                     retryAttempt => TimeSpan.FromSeconds(2));
         }
 
-        public RetryPolicy<RestResponse> Policy { get; set; }
+        private RetryPolicy<RestResponse> Policy { get; set; }
         public virtual string GetPageContent(string uri)
         {
             var isCreate = Uri.TryCreate(uri, UriKind.Absolute, out var target);
@@ -36,16 +33,5 @@ namespace Funny.WebScrape.Loaders
 
             return resp.Content;
         }
-
-
-        public IHtmlDocument LoadPageFromString(string text)
-        {
-            var config = Configuration.Default.WithDefaultLoader().WithCss();
-            var context = BrowsingContext.New(config);
-            var parser = context.GetService<IHtmlParser>();
-            return parser.ParseDocument(text);
-        }
-
-        public IHtmlDocument GetPage(string url) => LoadPageFromString(GetPageContent(url));
     }
 }

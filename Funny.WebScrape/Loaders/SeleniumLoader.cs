@@ -1,6 +1,3 @@
-﻿using AngleSharp;
-using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 
@@ -28,15 +25,5 @@ namespace Funny.WebScrape.Loaders
             wait.Until(driver =>
                 ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete"));
         }
-
-        public IHtmlDocument LoadPageFromString(string text)
-        {
-            var config = Configuration.Default.WithDefaultLoader().WithCss();
-            var context = BrowsingContext.New(config);
-            var parser = context.GetService<IHtmlParser>();
-            return parser.ParseDocument(text);
-        }
-
-        public IHtmlDocument GetPage(string url) => LoadPageFromString(GetPageContent(url));
     }
 }
