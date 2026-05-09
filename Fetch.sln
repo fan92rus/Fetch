@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fetch.Server", "Fetch.Serve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fetch.Cli", "Fetch.Cli\Fetch.Cli.csproj", "{B0FE85D8-5BEB-4F83-9A6E-B513AADC47E7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funny.WebScrape.Tests", "Funny.WebScrape.Tests\Funny.WebScrape.Tests.csproj", "{673EBF59-5A63-4339-B6C0-18C73AEBB842}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{B0FE85D8-5BEB-4F83-9A6E-B513AADC47E7}.Release|x64.Build.0 = Release|Any CPU
 		{B0FE85D8-5BEB-4F83-9A6E-B513AADC47E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{B0FE85D8-5BEB-4F83-9A6E-B513AADC47E7}.Release|x86.Build.0 = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|x64.Build.0 = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Debug|x86.Build.0 = Debug|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|x64.ActiveCfg = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|x64.Build.0 = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|x86.ActiveCfg = Release|Any CPU
+		{673EBF59-5A63-4339-B6C0-18C73AEBB842}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

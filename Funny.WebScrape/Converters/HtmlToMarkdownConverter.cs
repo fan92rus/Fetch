@@ -19,9 +19,12 @@ public class HtmlToMarkdownConverter
 
     public async Task<string> ConvertAsync(string html, string url, ConversionMode mode, bool images = false)
     {
-        var inputHtml = mode == ConversionMode.Article
-            ? ExtractArticleContent(html)
-            : html;
+        var inputHtml = mode == ConversionMode.FullPage
+            ? html
+            : ExtractWithFallback(html);
+
+        if (string.IsNullOrEmpty(inputHtml))
+            inputHtml = html;
 
         var result = await _mdream.ConvertAsync(inputHtml, originUrl: url);
         var markdown = result.Markdown ?? string.Empty;
@@ -30,6 +33,15 @@ public class HtmlToMarkdownConverter
             markdown = ImagePattern.Replace(markdown, "");
 
         return markdown;
+    }
+
+    private static string ExtractWithFallback(string html)
+    {
+        var smartResult = new SmartReader().ExtractArticleContent(html);
+        if (!string.IsNullOrEmpty(smartResult))
+            return smartResult;
+
+        return ExtractArticleContent(html);
     }
 
     private static string ExtractArticleContent(string html)

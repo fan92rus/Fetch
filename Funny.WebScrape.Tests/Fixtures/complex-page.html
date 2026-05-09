@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head><title>Complex Page</title></head>
+<body>
+    <nav class="top-nav">
+        <a href="/">Home</a>
+        <a href="/news">News</a>
+        <a href="/tech">Tech</a>
+        <a href="/science">Science</a>
+    </nav>
+    <div class="ad-banner">
+        <script>document.write('BUY NOW!');</script>
+        <a href="https://ads.example.com/click"><img src="ad.jpg" alt="Advertisement" /></a>
+    </div>
+    <div class="page-layout">
+        <div class="sidebar-left">
+            <div class="widget">
+                <h3>Categories</h3>
+                <a href="/cat1">Category 1</a>
+                <a href="/cat2">Category 2</a>
+                <a href="/cat3">Category 3</a>
+                <a href="/cat4">Category 4</a>
+                <a href="/cat5">Category 5</a>
+                <a href="/cat6">Category 6</a>
+            </div>
+            <div class="ad-sidebar">
+                <a href="https://ads.example.com/sidebar"><img src="sidebar-ad.jpg" alt="Ad" /></a>
+            </div>
+        </div>
+        <main id="main-content" class="post-content">
+            <article class="blog-post">
+                <h1>The Future of Web Content Extraction</h1>
+                <p class="meta">Published on January 15, 2025 by John Doe</p>
+                <p>In the rapidly evolving landscape of web development, content extraction has become an essential tool for developers, researchers, and content creators alike. The ability to accurately isolate the primary content of a web page from its surrounding chrome, such as navigation, advertisements, and sidebars, is crucial for a wide range of applications.</p>
+                <p>Traditional approaches to content extraction, such as the Readability algorithm developed by Mozilla, have served the community well for many years. However, as web pages have grown more complex with dynamic content loading, responsive layouts, and sophisticated advertising networks, these legacy approaches often struggle to produce clean results.</p>
+                <p>The key insight behind modern content extraction is that the main article content tends to share certain characteristics across diverse web pages. It typically consists of long paragraphs of text, contains relatively few links compared to navigation areas, and is usually contained within semantic HTML elements like article or main tags.</p>
+                <p>By combining multiple signals, including text density, link density, paragraph count, and semantic tag analysis, we can build a robust scoring system that reliably identifies the primary content area. This multi-signal approach is far more resilient than any single heuristic used in isolation.</p>
+                <p>Consider a typical news article page. The navigation bar contains many links but very little text. The sidebar has widgets and advertisements. The article itself contains long paragraphs with minimal linking. Our scoring algorithm exploits these differences to make accurate determinations.</p>
+                <p>Another important consideration is the handling of comments sections. While comments are user-generated content, they are typically not part of the main article. SmartReader's scoring takes into account the proximity and context of content blocks to distinguish between the article and its comments.</p>
+                <p>Performance is also a critical factor. The extraction algorithm must process pages quickly, especially when integrated into larger scraping pipelines that may handle thousands of pages per minute. Our implementation leverages efficient DOM traversal and avoids unnecessary re-parsing of the document.</p>
+                <p>Looking ahead, we plan to incorporate machine learning models trained on labeled datasets of web pages. These models will complement the rule-based scoring system, providing an additional layer of accuracy for edge cases that are difficult to handle with heuristics alone.</p>
+                <p>In conclusion, the field of web content extraction continues to advance, driven by the increasing complexity of web pages and the growing demand for clean, structured content. By combining proven heuristic approaches with emerging machine learning techniques, we can build extraction systems that are both reliable and adaptable to the ever-changing web.</p>
+            </article>
+            <div id="comments" class="comments-section">
+                <h3>Comments</h3>
+                <div class="comment">
+                    <p>Great article! I've been looking for a better solution.</p>
+                    <a href="/user1">Reply</a>
+                </div>
+                <div class="comment">
+                    <p>Have you tried using ML for this?</p>
+                    <a href="/user2">Reply</a>
+                </div>
+            </div>
+        </main>
+        <div class="sidebar-right">
+            <div class="widget">
+                <h3>Popular Posts</h3>
+                <a href="/popular1">Popular Post 1</a>
+                <a href="/popular2">Popular Post 2</a>
+                <a href="/popular3">Popular Post 3</a>
+            </div>
+            <div class="ad-right">
+                <a href="https://ads.example.com/right"><img src="right-ad.jpg" alt="Ad" /></a>
+            </div>
+        </div>
+    </div>
+    <footer class="site-footer">
+        <p>Copyright 2025 Tech Blog</p>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+    </footer>
+</body>
+</html>
