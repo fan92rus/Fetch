@@ -7,7 +7,7 @@ description: >
   TRIGGER: When the user asks to read a web page, convert HTML to Markdown,
   fetch page content, or extract article text from a URL.
 allowed-tools: Bash(fetch)
-version: "1.1.0"
+version: "1.2.0"
 ---
 
 # Fetch.Cli — HTML to Markdown
