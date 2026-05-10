@@ -15,7 +15,7 @@ COPY RestSharp.Extensions/RestSharp.Polly.Extensions.Core.csproj RestSharp.Exten
 COPY SimHash/SimHash.csproj SimHash/
 COPY Fetch.sln .
 
-RUN dotnet restore
+RUN dotnet restore Fetch.Server/Fetch.Server.csproj
 
 COPY . .
 RUN dotnet publish Fetch.Server/Fetch.Server.csproj -c Release -o /app/publish --no-restore
