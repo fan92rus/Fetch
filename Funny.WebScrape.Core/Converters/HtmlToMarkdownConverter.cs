@@ -12,6 +12,8 @@ public enum ConversionMode
 public class HtmlToMarkdownConverter
 {
     private static readonly Regex ImagePattern = new(@"!\[[^\]]*\]\([^)]+\)\s*", RegexOptions.Compiled);
+    private static readonly Regex BrPattern = new(@"<br\s*/?>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private const string BrMarker = "";
     private readonly MdreamConverter _mdream = new();
 
     public async Task<string> ConvertAsync(string html, string url, ConversionMode mode, bool images = false)
@@ -31,6 +33,8 @@ public class HtmlToMarkdownConverter
         if (!images)
             markdown = ImagePattern.Replace(markdown, "");
 
+        markdown = markdown.Replace(BrMarker, "\n");
+
         return markdown;
     }
 
@@ -40,10 +44,9 @@ public class HtmlToMarkdownConverter
         if (!html.Contains("<html", StringComparison.OrdinalIgnoreCase))
             html = $"<html><body>{html}</body></html>";
 
-        // mdream ignores <br> tags; replace with paragraph breaks to force line breaks
-        html = html.Replace("<br>", "</p><p>")
-                   .Replace("<br/>", "</p><p>")
-                   .Replace("<br />", "</p><p>");
+        // mdream ignores <br> tags; replace with a marker that survives conversion
+        // and is restored to a newline in the final markdown
+        html = BrPattern.Replace(html, BrMarker);
 
         return html;
     }
