@@ -10,6 +10,7 @@ RUN if [ -n "$GITHUB_TOKEN" ]; then \
 
 COPY Fetch.Server/Fetch.Server.csproj Fetch.Server/
 COPY Fetch.Cli/Fetch.Cli.csproj Fetch.Cli/
+COPY Funny.WebScrape.Core/Funny.WebScrape.Core.csproj Funny.WebScrape.Core/
 COPY Funny.WebScrape/Funny.WebScrape.csproj Funny.WebScrape/
 COPY RestSharp.Extensions/RestSharp.Polly.Extensions.Core.csproj RestSharp.Extensions/
 COPY SimHash/SimHash.csproj SimHash/
