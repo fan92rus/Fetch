@@ -17,11 +17,11 @@ public class HtmlToMarkdownConverter
     private static readonly Regex ImagePattern = new(@"!\[[^\]]*\]\([^)]+\)\s*", RegexOptions.Compiled);
     private readonly MdreamConverter _mdream = new();
 
-    public async Task<string> ConvertAsync(string html, string url, ConversionMode mode, bool images = false, bool stripDiscussion = false)
+    public async Task<string> ConvertAsync(string html, string url, ConversionMode mode, bool images = false)
     {
         var inputHtml = mode == ConversionMode.FullPage
             ? html
-            : ExtractWithFallback(html, stripDiscussion);
+            : ExtractWithFallback(html);
 
         if (string.IsNullOrEmpty(inputHtml))
             inputHtml = html;
@@ -35,123 +35,14 @@ public class HtmlToMarkdownConverter
         return markdown;
     }
 
-    private static string ExtractWithFallback(string html, bool stripDiscussion)
+    private static string ExtractWithFallback(string html)
     {
-        var smartResult = new SmartReader().ExtractArticleContent(html, stripDiscussion);
-
-        if (stripDiscussion && !string.IsNullOrEmpty(smartResult))
-        {
-            smartResult = StripDiscussion(smartResult);
-        }
-
+        var smartResult = new SmartReader().ExtractArticleContent(html);
         if (!string.IsNullOrEmpty(smartResult))
             return smartResult;
 
-        var fallback = ExtractArticleContent(html);
-        return stripDiscussion ? StripDiscussion(fallback) : fallback;
+        return ExtractArticleContent(html);
     }
-
-    private static string StripDiscussion(string html)
-    {
-        var config = Configuration.Default;
-        var context = BrowsingContext.New(config);
-        var parser = context.GetService<IHtmlParser>();
-        var document = parser.ParseDocument(html);
-
-        if (document.Body == null)
-            return html;
-
-        var body = document.Body;
-
-        // Forum reply containers — keep only first child with text, remove siblings
-        foreach (var selector in DiscussionSelectors)
-        {
-            var elements = body.QuerySelectorAll(selector);
-            if (elements.Length > 1)
-            {
-                var first = elements[0];
-                for (var i = 1; i < elements.Length; i++)
-                    elements[i].Remove();
-            }
-        }
-
-        // Remove discussion-related blocks entirely
-        foreach (var selector in RemoveSelectors)
-        {
-            foreach (var el in body.QuerySelectorAll(selector))
-                el.Remove();
-        }
-
-        return body.InnerHtml;
-    }
-
-    // Selectors for reply/message blocks — keep only the first match
-    private static readonly string[] DiscussionSelectors =
-    [
-        ".post_wrap",
-        ".message",
-        ".postBody",
-        ".post-body",
-        ".post_body",
-        ".topic-post",
-        ".topic-item",
-        ".comment-item",
-        ".thread-item",
-    ];
-
-    // Selectors for blocks to always remove when stripDiscussion is enabled
-    private static readonly string[] RemoveSelectors =
-    [
-        // Reply forms
-        ".reply-form",
-        "#reply-form",
-        ".quickreply",
-        "#quick-reply",
-        "#replybox",
-        ".post-form",
-        ".create-post",
-        ".postcontrols",
-        ".post-links",
-        // Pagination
-        ".pagination",
-        ".page-buttons",
-        ".forum-pages",
-        ".topic-pages",
-        ".pager",
-        "#topic-pages",
-        ".page-breadcrumb",
-        // User info blocks
-        ".user-info",
-        ".poster_info",
-        ".postprofile",
-        ".author-info",
-        ".post-author",
-        ".post-header",
-        ".post-info",
-        ".post-meta",
-        ".post-buttons",
-        ".t-post-buttons",
-        ".post-head",
-        ".post_head",
-        ".signature",
-        ".user-sig",
-        ".post-signature",
-        ".online-indicator",
-        ".post-controls",
-        ".posted_since",
-        ".rank_img",
-        // Polls
-        ".poll",
-        // Breadcrumbs and forum nav
-        ".breadcrumbs",
-        ".forum-nav",
-        ".topic-title",
-        ".topic-actions",
-        ".bottom_info",
-        ".footer-bottom-links",
-        // Avatar images
-        ".avatar",
-    ];
 
     private static string ExtractArticleContent(string html)
     {

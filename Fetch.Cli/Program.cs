@@ -27,7 +27,6 @@ class Program
         var loadingType = GetOption(args, "--loading-type", "-l") ?? "HttpRequest";
         var mode = GetOption(args, "--mode", "-m") ?? "article";
         var imagesFlag = args.Contains("--images");
-        var stripDiscussion = args.Contains("--no-replies");
 
         var config = LoadConfig();
         var server = GetOption(args, "--server", "-s") ?? config.Server ?? "http://localhost:5020";
@@ -39,7 +38,7 @@ class Program
 
         try
         {
-            var apiUrl = $"{server.TrimEnd('/')}/parse/url?url={Uri.EscapeDataString(url)}&loadingType={loadingType}&mode={conversionMode}&images={images}&stripDiscussion={stripDiscussion}";
+            var apiUrl = $"{server.TrimEnd('/')}/parse/url?url={Uri.EscapeDataString(url)}&loadingType={loadingType}&mode={conversionMode}&images={images}";
 
             using var http = new HttpClient();
             var response = await http.GetAsync(apiUrl);
@@ -172,7 +171,6 @@ class Program
         Console.WriteLine("  -l, --loading-type <t>         Loader type: HttpRequest (default) or Selenium");
         Console.WriteLine("  -s, --server <url>             Override server URL (default: from config or http://localhost:5020)");
         Console.WriteLine("  --images                       Include images in output (disabled by default)");
-        Console.WriteLine("  --no-replies                   Strip forum replies, signatures, pagination, user info");
         Console.WriteLine("  -h, --help                     Show this help");
         Console.WriteLine();
         Console.WriteLine("Config file: ~/.config/fetch.cli/config.json");

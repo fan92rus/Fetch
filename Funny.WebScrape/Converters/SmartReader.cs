@@ -14,10 +14,6 @@ public class SmartReader
         ["sidebar", "nav", "footer", "header", "ad", "ads", "advert", "comment", "social", "share", "widget",
          "promo", "banner", "sponsor", "related", "popup", "modal", "cookie", "newsletter", "subscription"];
 
-    private static readonly string[] DiscussionClassPatterns =
-        ["signature", "user-sig", "user-info", "post-info", "post-meta", "post-author", "post-head", "post-buttons",
-         "postprofile", "online-indicator", "profile-field"];
-
     private static readonly string[] PositiveClassPatterns =
         ["content", "article", "post", "entry", "blog", "story", "text", "body"];
 
@@ -31,7 +27,7 @@ public class SmartReader
         ["DIV"] = 0,
     };
 
-    public string ExtractArticleContent(string html, bool stripDiscussion = false)
+    public string ExtractArticleContent(string html)
     {
         var config = Configuration.Default;
         using var context = BrowsingContext.New(config);
@@ -41,7 +37,7 @@ public class SmartReader
         if (document.Body == null)
             return string.Empty;
 
-        StripUnwantedElements(document.Body, stripDiscussion);
+        StripUnwantedElements(document.Body);
 
         var candidates = FindCandidates(document.Body);
         if (candidates.Count == 0)
@@ -51,17 +47,12 @@ public class SmartReader
         return best?.Element.InnerHtml ?? string.Empty;
     }
 
-    private void StripUnwantedElements(IElement root, bool stripDiscussion)
+    private void StripUnwantedElements(IElement root)
     {
         foreach (var tag in StripTags)
         {
             foreach (var el in root.QuerySelectorAll(tag).ToList())
                 el.Remove();
-        }
-
-        if (stripDiscussion)
-        {
-            StripDiscussionElements(root);
         }
 
         foreach (var el in root.QuerySelectorAll("*").ToList())
@@ -73,49 +64,6 @@ public class SmartReader
             }
         }
     }
-
-    private static void StripDiscussionElements(IElement root)
-    {
-        // For container selectors — keep only the first match, remove siblings
-        foreach (var pattern in DiscussionContainerPatterns)
-        {
-            var trimmed = pattern.Trim();
-            var elements = root.QuerySelectorAll($"*.{trimmed}, *[id*='{trimmed}']");
-            if (elements.Length > 1)
-            {
-                for (var i = 1; i < elements.Length; i++)
-                    elements[i].Remove();
-            }
-        }
-
-        // For metadata/form selectors — always remove
-        foreach (var pattern in DiscussionRemovePatterns)
-        {
-            var trimmed = pattern.Trim();
-            foreach (var el in root.QuerySelectorAll($"*.{trimmed}, *[id*='{trimmed}']").ToList())
-                el.Remove();
-        }
-    }
-
-    // Container patterns — keep first match only (post/message containers)
-    private static readonly string[] DiscussionContainerPatterns =
-    [
-        "message", "post-body", "post_body", "post_wrap", "topic-post", "topic-item",
-        "comment-item", "thread-item", "post-entry",
-    ];
-
-    // Patterns to always remove (metadata, forms, navigation)
-    private static readonly string[] DiscussionRemovePatterns =
-    [
-        "post_head", "post-head", "post-entry", "entry-content", "signature", "user-sig",
-        "user-info", "post-info", "post-meta", "post-author", "post-buttons", "t-post-buttons",
-        "poster_info", "postprofile", "author-info",
-        "pagination", "page-numbers", "page-breadcrumb",
-        "online-indicator", "profile-field", "posted_since", "rank_img",
-        "reply-form", "quickreply", "post-form", "create-post", "posting",
-        "bottom_info", "footer-bottom-links",
-        "avatar",
-    ];
 
     private static bool HasNegativeMatch(IElement el)
     {

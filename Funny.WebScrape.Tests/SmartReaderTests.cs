@@ -126,49 +126,4 @@ public class SmartReaderTests
         Assert.Contains("main content of the page", result);
         Assert.DoesNotContain("Footer text", result);
     }
-
-    [Fact]
-    public void Extract_WithStripDiscussion_RemovesForumMetadata()
-    {
-        var html = """
-            <html><body>
-                <div class="message first-post">
-                    <div class="user-info">User123</div>
-                    <div class="post-info">Posted: Jan 1</div>
-                    <div class="post-body">
-                        <p>This is the original post content with enough words to be considered significant text content for the SmartReader extraction algorithm to pick up as the main content of this forum thread.</p>
-                    </div>
-                </div>
-                <div class="pagination">1 2 3</div>
-                <div class="reply-form"><textarea></textarea></div>
-            </body></html>
-            """;
-
-        var reader = new SmartReader();
-        var result = reader.ExtractArticleContent(html, stripDiscussion: true);
-
-        Assert.Contains("original post content", result);
-        Assert.DoesNotContain("User123", result);
-        Assert.DoesNotContain("Posted: Jan 1", result);
-    }
-
-    [Fact]
-    public void Extract_WithoutStripDiscussion_ReturnsPostContent()
-    {
-        var html = """
-            <html><body>
-                <div class="message first-post">
-                    <div class="user-info">User123</div>
-                    <div class="post-body">
-                        <p>This is the original post content with enough words to be considered significant text content for the SmartReader extraction algorithm to pick up as the main content of this forum thread.</p>
-                    </div>
-                </div>
-            </body></html>
-            """;
-
-        var reader = new SmartReader();
-        var result = reader.ExtractArticleContent(html, stripDiscussion: false);
-
-        Assert.Contains("original post content", result);
-    }
 }
