@@ -6,10 +6,11 @@
 
 | Проект | Описание |
 |--------|----------|
-| **Fetch.Server** | Бэкенд — EmbedIO HTTP-сервер (порт 5020) |
-| **Fetch.Cli** | dotnet tool для CLI-доступа к API |
-| **Funny.WebScrape.Core** | Извлечение контента + конвертация HTML→MD (без сетевых зависимостей) |
-| **Funny.WebScrape** | Загрузка страниц + конвертация HTML→MD (включает Core) |
+| [Fetch.Server](Fetch.Server/README.md) | Бэкенд — EmbedIO HTTP-сервер (порт 5020) |
+| [Fetch.Cli](Fetch.Cli/README.md) | dotnet tool для CLI-доступа к API |
+| [Funny.WebScrape.Core](Funny.WebScrape.Core/README.md) | Извлечение контента + конвертация HTML→MD (без сетевых зависимостей) |
+| [Funny.WebScrape](Funny.WebScrape/README.md) | Загрузка страниц + конвертация HTML→MD (включает Core) |
+| [RestSharp.Extensions](RestSharp.Extensions/README.md) | Расширения RestSharp + Polly |
 
 ## API
 
