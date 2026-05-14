@@ -8,7 +8,8 @@
 |--------|----------|
 | **Fetch.Server** | Бэкенд — EmbedIO HTTP-сервер (порт 5020) |
 | **Fetch.Cli** | dotnet tool для CLI-доступа к API |
-| **Funny.WebScrape** | Библиотека: загрузка страниц + конвертация HTML→MD |
+| **Funny.WebScrape.Core** | Извлечение контента + конвертация HTML→MD (без сетевых зависимостей) |
+| **Funny.WebScrape** | Загрузка страниц + конвертация HTML→MD (включает Core) |
 
 ## API
 
