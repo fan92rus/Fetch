@@ -12,10 +12,11 @@ public class SmartReader
 
     private static readonly string[] NegativeClassPatterns =
         ["sidebar", "nav", "footer", "header", "ad", "ads", "advert", "comment", "social", "share", "widget",
-         "promo", "banner", "sponsor", "related", "popup", "modal", "cookie", "newsletter", "subscription"];
+         "promo", "banner", "sponsor", "related", "popup", "modal", "cookie", "newsletter", "subscription",
+         "poster_info", "poster_btn", "post_head", "posted_since", "rank_img", "avatar"];
 
     private static readonly string[] PositiveClassPatterns =
-        ["content", "article", "post", "entry", "blog", "story", "text", "body"];
+        ["content", "article", "post", "entry", "blog", "story", "text", "body", "post_body", "post-wrap"];
 
     private static readonly HashSet<string> ContentTags = ["article", "main", "section", "div", "p"];
 
@@ -91,11 +92,14 @@ public class SmartReader
     {
         var candidates = new List<Candidate>();
 
-        foreach (var el in root.QuerySelectorAll("*"))
-        {
-            if (!TagScores.ContainsKey(el.TagName))
-                continue;
+        // Forum heuristic: if page has post-body elements, only score those
+        var postBodies = root.QuerySelectorAll(".post_body, .post-body").ToList();
+        var elements = postBodies.Count > 0
+            ? postBodies
+            : root.QuerySelectorAll("*").Where(el => TagScores.ContainsKey(el.TagName));
 
+        foreach (var el in elements)
+        {
             var text = el.TextContent?.Trim() ?? "";
             if (text.Length < 40)
                 continue;
