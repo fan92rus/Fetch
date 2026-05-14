@@ -100,16 +100,21 @@ public class SmartReader
     // Container patterns — keep first match only (post/message containers)
     private static readonly string[] DiscussionContainerPatterns =
     [
-        "message", "post-body", "topic-post", "topic-item", "post-wrap", "comment-item", "thread-item",
+        "message", "post-body", "post_body", "post_wrap", "topic-post", "topic-item",
+        "comment-item", "thread-item", "post-entry",
     ];
 
     // Patterns to always remove (metadata, forms, navigation)
     private static readonly string[] DiscussionRemovePatterns =
     [
-        "post-entry", "entry-content", "signature", "user-sig", "user-info", "post-info",
-        "post-meta", "post-author", "post-head", "post-buttons", "quote-content", "quote-header",
-        "spoiler", "poll", "pagination", "page-numbers", "online-indicator", "profile-field",
-        "reply-form", "quickreply", "post-form", "create-post",
+        "post_head", "post-head", "post-entry", "entry-content", "signature", "user-sig",
+        "user-info", "post-info", "post-meta", "post-author", "post-buttons", "t-post-buttons",
+        "poster_info", "postprofile", "author-info",
+        "pagination", "page-numbers", "page-breadcrumb",
+        "online-indicator", "profile-field", "posted_since", "rank_img",
+        "reply-form", "quickreply", "post-form", "create-post", "posting",
+        "bottom_info", "footer-bottom-links",
+        "avatar",
     ];
 
     private static bool HasNegativeMatch(IElement el)

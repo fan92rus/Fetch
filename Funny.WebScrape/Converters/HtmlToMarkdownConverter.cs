@@ -88,12 +88,13 @@ public class HtmlToMarkdownConverter
     // Selectors for reply/message blocks — keep only the first match
     private static readonly string[] DiscussionSelectors =
     [
+        ".post_wrap",
         ".message",
         ".postBody",
         ".post-body",
+        ".post_body",
         ".topic-post",
         ".topic-item",
-        ".post-wrap",
         ".comment-item",
         ".thread-item",
     ];
@@ -121,6 +122,7 @@ public class HtmlToMarkdownConverter
         ".page-breadcrumb",
         // User info blocks
         ".user-info",
+        ".poster_info",
         ".postprofile",
         ".author-info",
         ".post-author",
@@ -128,26 +130,27 @@ public class HtmlToMarkdownConverter
         ".post-info",
         ".post-meta",
         ".post-buttons",
+        ".t-post-buttons",
         ".post-head",
+        ".post_head",
         ".signature",
         ".user-sig",
         ".post-signature",
         ".online-indicator",
         ".post-controls",
-        // Quotes
-        ".quote-content",
-        ".quote-header",
-        ".blockquote",
+        ".posted_since",
+        ".rank_img",
         // Polls
         ".poll",
-        // Spoilers
-        ".spoiler",
-        ".spoiler-content",
         // Breadcrumbs and forum nav
         ".breadcrumbs",
         ".forum-nav",
         ".topic-title",
         ".topic-actions",
+        ".bottom_info",
+        ".footer-bottom-links",
+        // Avatar images
+        ".avatar",
     ];
 
     private static string ExtractArticleContent(string html)
