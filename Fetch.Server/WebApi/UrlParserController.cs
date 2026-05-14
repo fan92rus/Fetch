@@ -23,14 +23,15 @@ public class UrlParserController : WebApiController
         [QueryField] string url,
         [QueryField] LoadingType loadingType,
         [QueryField] ConversionMode mode = ConversionMode.Article,
-        [QueryField] bool images = false)
+        [QueryField] bool images = false,
+        [QueryField] bool stripDiscussion = false)
     {
         var loaderFactory = _serviceProvider.GetService<ILoaderFactory>();
         var converter = _serviceProvider.GetService<HtmlToMarkdownConverter>();
 
         var loader = loaderFactory.CreateLoader(loadingType);
         var html = await loader.GetPageContentAsync(url);
-        var markdown = await converter.ConvertAsync(html, url, mode, images);
+        var markdown = await converter.ConvertAsync(html, url, mode, images, stripDiscussion);
 
         return new ParseResponse
         {
