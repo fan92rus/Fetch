@@ -33,7 +33,7 @@ var markdown = await converter.ConvertAsync(html, url: "https://example.com", mo
 ```
 
 **Режимы:**
-- `ConversionMode.Article` — извлечение основного контента (`SmartReader` → fallback на `AngleSharp.ContentExtractor`)
+- `ConversionMode.Article` — извлечение основного контента через `SmartReader`
 - `ConversionMode.FullPage` — конвертация всего HTML
 
 ### DI
@@ -49,6 +49,5 @@ services.AddWebScrapeCore();
 ## Зависимости
 
 - AngleSharp
-- AngleSharp.ContentExtraction
 - MdreamWrapper
 - Microsoft.Extensions.DependencyInjection

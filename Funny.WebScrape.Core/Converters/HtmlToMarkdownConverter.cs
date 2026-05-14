@@ -1,7 +1,4 @@
 using System.Text.RegularExpressions;
-using AngleSharp;
-using AngleSharp.ContentExtraction;
-using AngleSharp.Html.Parser;
 using MdreamWrapper;
 
 namespace Funny.WebScrape.Converters;
@@ -21,7 +18,7 @@ public class HtmlToMarkdownConverter
     {
         var inputHtml = mode == ConversionMode.FullPage
             ? html
-            : ExtractWithFallback(html);
+            : new SmartReader().ExtractArticleContent(html);
 
         if (string.IsNullOrEmpty(inputHtml))
             inputHtml = html;
@@ -33,27 +30,5 @@ public class HtmlToMarkdownConverter
             markdown = ImagePattern.Replace(markdown, "");
 
         return markdown;
-    }
-
-    private static string ExtractWithFallback(string html)
-    {
-        var smartResult = new SmartReader().ExtractArticleContent(html);
-        if (!string.IsNullOrEmpty(smartResult))
-            return smartResult;
-
-        return ExtractArticleContent(html);
-    }
-
-    private static string ExtractArticleContent(string html)
-    {
-        var config = Configuration.Default;
-        var context = BrowsingContext.New(config);
-        var parser = context.GetService<IHtmlParser>();
-        var document = parser.ParseDocument(html);
-
-        var extractor = new ContentExtractor();
-        extractor.Extract(document);
-
-        return document.Body?.InnerHtml ?? html;
     }
 }
