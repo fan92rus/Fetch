@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestSharp.Polly.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimHash", "SimHash\SimHash.csproj", "{B9035170-C867-428C-9F19-3C19F28D8853}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funny.WebScrape.Core", "Funny.WebScrape.Core\Funny.WebScrape.Core.csproj", "{E2D4B8A1-3C5F-4A7B-9E1D-8F3C6A2B5D71}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funny.WebScrape", "Funny.WebScrape\Funny.WebScrape.csproj", "{F51B5CBF-1183-47A9-A537-86AFA3EC3478}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fetch.Server", "Fetch.Server\Fetch.Server.csproj", "{7F50D185-5349-4734-89DC-5BE5484A4784}"

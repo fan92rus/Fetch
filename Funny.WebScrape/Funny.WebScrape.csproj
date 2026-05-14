@@ -8,18 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="tls-client-sharp" Version="1.0.0" />
-        <PackageReference Include="AngleSharp.ContentExtraction" Version="0.0.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
-        <PackageReference Include="MdreamWrapper" Version="1.4.0" />
         <PackageReference Include="Polly" Version="8.6.2" />
         <PackageReference Include="RestSharp" Version="112.1.0" />
         <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Funny.WebScrape.Core\Funny.WebScrape.Core.csproj" />
       <ProjectReference Include="..\RestSharp.Extensions\RestSharp.Polly.Extensions.Core.csproj" />
     </ItemGroup>
 

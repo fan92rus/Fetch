@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Funny.WebScrape\Funny.WebScrape.csproj" />
+        <ProjectReference Include="..\Funny.WebScrape.Core\Funny.WebScrape.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

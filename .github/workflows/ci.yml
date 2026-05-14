@@ -77,10 +77,10 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
-  publish-tool:
+  publish-packages:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,7 +93,29 @@ jobs:
       - name: Authenticate GitHub Packages
         run: dotnet nuget update source github --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
-      - run: dotnet pack Fetch.Cli/Fetch.Cli.csproj -c Release -o ./nupkgs
+      - name: Pack and push new versions
+        run: |
+          publish_if_new() {
+            csproj="$1"
+            pkg=$(basename "$csproj" .csproj)
+            ver=$(grep -oP '(?<=<Version>)[^<]+' "$csproj")
+            status=$(curl -s -o /dev/null -w "%{http_code}" \
+              -u "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+              "https://nuget.pkg.github.com/${{ github.repository_owner }}/download/${pkg}/${ver}/${pkg}.${ver}.nupkg")
+            if [ "$status" = "200" ]; then
+              echo "⏭ $pkg $ver already published"
+            else
+              echo "📦 Packing $pkg $ver"
+              dotnet pack "$csproj" -c Release -o ./nupkgs
+            fi
+          }
 
-      - name: Push tool package
-        run: dotnet nuget push ./nupkgs/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          publish_if_new "Funny.WebScrape.Core/Funny.WebScrape.Core.csproj"
+          publish_if_new "Funny.WebScrape/Funny.WebScrape.csproj"
+          publish_if_new "Fetch.Cli/Fetch.Cli.csproj"
+
+          if ls ./nupkgs/*.nupkg 1>/dev/null 2>&1; then
+            dotnet nuget push ./nupkgs/*.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          else
+            echo "No new packages to publish"
+          fi
