@@ -6,23 +6,25 @@ services:
     ports:
       - "5020:5020"
     environment:
-      - FLARESOLVERR_URL=http://flaresolverr:8191
-    depends_on:
-      - flaresolverr
+      # TRAWL вместо FlareSolverr: тот же FlareSolverr v2-совместимый контракт
+      # (POST {url}/v1, cmd=request.get -> status ok + solution.response).
+      # Требует внешнюю сеть relampa_default, где живёт trawl (CT100).
+      - FLARESOLVERR_URL=http://trawl:8191
     restart: unless-stopped
+    networks:
+      - proxy
+      - default
+      - relampa_default
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    ports:
-      - "8191:8191"
-    environment:
-      - LOG_LEVEL=info
-      - CAPTCHA_SOLVER=none
-    restart: unless-stopped
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+networks:
+  proxy:
+    external: true
+  default:
+    driver: bridge
+  relampa_default:
+    external: true
 
   watchtower:
     image: containrrr/watchtower
